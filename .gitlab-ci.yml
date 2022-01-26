@@ -12,6 +12,6 @@ build-package:
     - cat $PYPIRC > /tmp/.pypirc
     - pip install twine build
     - python -m build
-    - python -m twine upload --repository testpypi dist/guacamole-api-wrapper-${CI_COMMIT_TAG}-py3-none-any.whl --config-file /tmp/.pypirc
+    - python -m twine upload --repository testpypi dist/guacamole_api_wrapper-${CI_COMMIT_TAG}-py3-none-any.whl --config-file /tmp/.pypirc
   only:
     - tags
