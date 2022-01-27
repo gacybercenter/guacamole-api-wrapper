@@ -16,6 +16,7 @@ build-package:
     - python -m twine upload --repository testpypi dist/*
   only:
     - tags
+  allow_failure: true
 
 test-package:
   tags:
@@ -29,6 +30,7 @@ test-package:
     - build-package
   only:
     - tags
+  allow_failure: true
 
 deploy-package:
   tags:
