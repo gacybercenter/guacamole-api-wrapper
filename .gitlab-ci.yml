@@ -1,36 +1,34 @@
 ---
 
 stages:
-  - test
+  # - test
   - deploy
 
-build-package:
-  tags:
-    - docker-gcc
-  stage: test
-  image: python:latest
-  script:
-    - mv $(echo $pypirc) /root/.pypirc
-    - pip install twine build
-    - python -m build
-    - python -m twine upload --repository testpypi dist/*
-  only:
-    - tags
-  allow_failure: true
+# build-package:
+#   tags:
+#     - docker-gcc
+#   stage: test
+#   image: python:latest
+#   script:
+#     - mv $(echo $pypirc) /root/.pypirc
+#     - pip install twine build
+#     - python -m build
+#     - python -m twine upload --repository testpypi dist/*
+#   only:
+#     - tags
 
-test-package:
-  tags:
-    - docker-gcc
-  stage: test
-  image: python:latest
-  script:
-    - pip install -i https://test.pypi.org/simple/ guacamole-api-wrapper
-    - echo ' future testing put here'
-  dependencies:
-    - build-package
-  only:
-    - tags
-  allow_failure: true
+# test-package:
+#   tags:
+#     - docker-gcc
+#   stage: test
+#   image: python:latest
+#   script:
+#     - pip install -i https://test.pypi.org/simple/ guacamole-api-wrapper
+#     - echo ' future testing put here'
+#   dependencies:
+#     - build-package
+#   only:
+#     - tags
 
 deploy-package:
   tags:
@@ -42,8 +40,8 @@ deploy-package:
     - pip install twine build
     - python -m build
     - python -m twine upload --repository gitlab dist/*
-    - python -m twine upload --repository pypi dist/*
-  dependencies:
-    - test-package
+    - python -m twine upload dist/*
+  # dependencies:
+  #   - test-package
   only:
     - tags
