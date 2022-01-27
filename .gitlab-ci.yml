@@ -9,7 +9,7 @@ build-package:
   stage: deploy
   image: python:latest
   script:
-    - cat $PYPIRC
+    - echo $PYPIRC
     # - cat $PYPIRC > /tmp/.pypirc
     # - pip install twine build
     # - python -m build
