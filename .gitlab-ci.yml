@@ -40,7 +40,7 @@ deploy-package:
     - pip install twine build
     - python -m build
     - python -m twine upload --repository gitlab dist/*
-    - python -m twine upload dist/*
+    - python -m twine upload --repository pypi dist/*
   # dependencies:
   #   - test-package
   only:

@@ -1,5 +1,7 @@
 # Guacamole Wrapper Package
 
+[![pipeline status](https://gitlab.com/gacybercenter/gacyberrange/projects/guacamole-api-wrapper/badges/main/pipeline.svg)](https://gitlab.com/gacybercenter/gacyberrange/projects/guacamole-api-wrapper/-/commits/main)
+
 This is a simple package that allows you to take advantage of all
 currently available REST API calls within Apache Guacamole.
 
