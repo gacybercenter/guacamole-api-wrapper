@@ -9,9 +9,9 @@ build-package:
   stage: deploy
   image: python:latest
   script:
-    - whoami
-    # - pip install twine build
-    # - python -m build
-    # - python -m twine upload --repository testpypi dist/* --config-file /builds/gacybercenter/gacyberrange/projects/guacamole-api-wrapper.tmp/pypirc
+    - mv $(echo $pypirc) /root/.pypirc
+    - pip install twine build
+    - python -m build
+    - python -m twine upload --repository testpypi dist/*
   only:
     - tags
