@@ -11,6 +11,6 @@ build-package:
   script:
     - pip install twine build
     - python -m build
-    - python -m twine upload --repository testpypi dist/* --config-file $(echo $pypirc)
+    - python -m twine upload --repository testpypi dist/* --config-file /builds/gacybercenter/gacyberrange/projects/guacamole-api-wrapper.tmp/pypirc
   only:
     - tags
