@@ -9,10 +9,8 @@ build-package:
   stage: deploy
   image: python:latest
   script:
-    - echo $PYPIRC
-    # - cat $PYPIRC > /tmp/.pypirc
-    # - pip install twine build
-    # - python -m build
-    # - python -m twine upload --repository testpypi dist/* --config-file /tmp/.pypirc
+    - pip install twine build
+    - python -m build
+    - python -m twine upload --repository testpypi dist/* --config-file $(echo $pypirc)
   only:
     - tags
