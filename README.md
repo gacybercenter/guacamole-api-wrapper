@@ -1,6 +1,6 @@
 # Guacamole Wrapper Package
 
-[![pipeline status](https://gitlab.com/gacybercenter/gacyberrange/projects/guacamole-api-wrapper/badges/0.0.2/pipeline.svg)](https://gitlab.com/gacybercenter/gacyberrange/projects/guacamole-api-wrapper/-/commits/0.0.2)
+[![pipeline status](https://gitlab.com/gacybercenter/open/guacamole-api-wrapper/badges/0.0.3/pipeline.svg)](https://gitlab.com/gacybercenter/open/guacamole-api-wrapper/-/commits/0.0.3)
 
 
 
