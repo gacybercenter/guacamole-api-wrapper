@@ -1039,7 +1039,7 @@ class session:
         """
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{identifier}",
+            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
