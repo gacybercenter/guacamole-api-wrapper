@@ -8,6 +8,17 @@ socket.setdefaulttimeout(0.5)
 
 
 class session:
+    """
+    Guacamole Session Class. Used to interface with the Guacamole API.
+    
+    Example usage for getting the current Guacamole users:
+    gconn = guacamole.session('https://guacamole.org',
+                              'mysql',
+                              guac_user,
+                              guac_pass)
+    users = gconn.list_users()
+    """
+
     def __init__(self,
                  host: str,
                  data_source: str,
@@ -17,6 +28,7 @@ class session:
         self.username = username
         self.password = password
         self.data_source = data_source
+        self.api_url = f"{self.host}/api/session/data/{self.data_source}"
         self.token = self.generate_token()
         self.params = {"token": self.token}
 
@@ -45,7 +57,7 @@ class session:
         """Returns schema for user attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/userAttributes",
+            f"{self.api_url}/schema/userAttributes",
             params=self.params,
             verify=False,
             timeout=20
@@ -55,7 +67,7 @@ class session:
         """Returns schema for group attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/userGroupAttributes",
+            f"{self.api_url}/schema/userGroupAttributes",
             params=self.params,
             verify=False,
             timeout=20
@@ -65,7 +77,7 @@ class session:
         """Returns schema for connection attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/connectionAttributes",
+            f"{self.api_url}/schema/connectionAttributes",
             params=self.params,
             verify=False,
             timeout=20
@@ -75,7 +87,7 @@ class session:
         """Returns schema for sharing attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/sharingProfileAttributes",
+            f"{self.api_url}/schema/sharingProfileAttributes",
             params=self.params,
             verify=False,
             timeout=20
@@ -85,7 +97,7 @@ class session:
         """Returns schema for connection group attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/connectionGroupAttributes",
+            f"{self.api_url}/schema/connectionGroupAttributes",
             params=self.params,
             verify=False,
             timeout=20
@@ -95,7 +107,7 @@ class session:
         """Returns schema for protocols attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/protocols",
+            f"{self.api_url}/schema/protocols",
             params=self.params,
             verify=False,
             timeout=20
@@ -141,7 +153,7 @@ class session:
         """Returns user history"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/history/users",
+            f"{self.api_url}/history/users",
             params=self.params,
             verify=False,
             timeout=20
@@ -151,7 +163,7 @@ class session:
         """Returns user connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/history/connections",
+            f"{self.api_url}/history/connections",
             params=self.params,
             verify=False,
             timeout=20
@@ -161,7 +173,7 @@ class session:
         """Returns users"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users",
+            f"{self.api_url}/users",
             params=self.params,
             verify=False,
             timeout=20
@@ -172,7 +184,7 @@ class session:
         """Returns users details"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             params=self.params,
             verify=False,
             timeout=20
@@ -183,7 +195,7 @@ class session:
         """Returns users permissions"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+            f"{self.api_url}/users/{username}/permissions",
             params=self.params,
             verify=False,
             timeout=20
@@ -194,7 +206,7 @@ class session:
         """Returns users efffective permissions"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/effectivePermissions",
+            f"{self.api_url}/users/{username}/effectivePermissions",
             params=self.params,
             verify=False,
             timeout=20
@@ -205,7 +217,7 @@ class session:
         """Returns users groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/userGroups",
+            f"{self.api_url}/users/{username}/userGroups",
             params=self.params,
             verify=False,
             timeout=20
@@ -216,7 +228,7 @@ class session:
         """Returns users history"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/history",
+            f"{self.api_url}/users/{username}/history",
             params=self.params,
             verify=False,
             timeout=20
@@ -226,7 +238,7 @@ class session:
         """Returns current user details"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/self",
+            f"{self.api_url}/self",
             params=self.params,
             verify=False,
             timeout=20
@@ -239,7 +251,7 @@ class session:
         """Creates user"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/users",
+            f"{self.api_url}/users",
             headers={"Content-Type": "application/json"},
             verify=False,
             timeout=20,
@@ -268,7 +280,7 @@ class session:
         """Updates a user"""
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -298,7 +310,7 @@ class session:
         """Updates a user Password"""
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/password",
+            f"{self.api_url}/users/{username}/password",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -317,7 +329,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/userGroups",
+                f"{self.api_url}/users/{username}/userGroups",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -349,7 +361,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+                f"{self.api_url}/users/{username}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -429,7 +441,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+                f"{self.api_url}/users/{username}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=permissions,
@@ -443,7 +455,7 @@ class session:
         """Deletes user"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             params=self.params,
             verify=False,
             timeout=20
@@ -453,7 +465,7 @@ class session:
         """Returns user groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups",
+            f"{self.api_url}/userGroups",
             params=self.params,
             verify=False,
             timeout=20
@@ -463,7 +475,7 @@ class session:
         """Returns user groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}",
+            f"{self.api_url}/userGroups/{groupname}",
             params=self.params,
             verify=False,
             timeout=20
@@ -477,7 +489,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/memberUsers",
+                f"{self.api_url}/userGroups/{groupname}/memberUsers",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -500,7 +512,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/memberUserGroup",
+                f"{self.api_url}/userGroups/{groupname}/memberUserGroup",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -523,7 +535,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/userGroups",
+                f"{self.api_url}/userGroups/{groupname}/userGroups",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -601,7 +613,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/permissions",
+                f"{self.api_url}/userGroups/{groupname}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=permissions,
@@ -618,7 +630,7 @@ class session:
 
         if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/permissions",
+                f"{self.api_url}/userGroups/{groupname}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -639,7 +651,7 @@ class session:
         """Creates a user group"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups",
+            f"{self.api_url}/userGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -658,7 +670,7 @@ class session:
         """Updates a user group"""
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}",
+            f"{self.api_url}/userGroups/{groupname}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -676,7 +688,7 @@ class session:
         """Deletes a user group"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{user_group}",
+            f"{self.api_url}/userGroups/{user_group}",
             params=self.params,
             verify=False,
             timeout=20
@@ -711,9 +723,9 @@ class session:
         """
 
         if active:
-            host = f"{self.host}/api/session/data/{self.data_source}/activeConnections"
+            host = f"{self.api_url}/activeConnections"
         else:
-            host = f"{self.host}/api/session/data/{self.data_source}/connections"
+            host = f"{self.api_url}/connections"
 
         return json.dumps(requests.get(
             host,
@@ -731,13 +743,13 @@ class session:
         """
 
         if not option:
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}"
+            host = f"{self.api_url}/connections/{str(identifier)}"
         elif option == "params":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/parameters"
+            host = f"{self.api_url}/connections/{str(identifier)}/parameters"
         elif option == "history":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/history"
+            host = f"{self.api_url}/connections/{str(identifier)}/history"
         elif option == "sharing":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/sharingProfiles"
+            host = f"{self.api_url}/connections/{str(identifier)}/sharingProfiles"
         else:
             return "Invalid option, requires no entry or (params, history, or sharing)"
 
@@ -753,7 +765,7 @@ class session:
         """Kill an active connection to a hosted system"""
 
         return requests.patch(
-            f"{self.host}/api/session/data/{self.data_source}/activeConnections",
+            f"{self.api_url}/activeConnections",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json=[
@@ -1034,7 +1046,7 @@ class session:
 
         if request == "post":
             return requests.post(
-                f"{self.host}/api/session/data/{self.data_source}/connections",
+                f"{self.api_url}/connections",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json={
@@ -1049,7 +1061,7 @@ class session:
             )
         if request == "put":
             return requests.put(
-                f"{self.host}/api/session/data/{self.data_source}/connections",
+                f"{self.api_url}/connections",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json={
@@ -1071,7 +1083,7 @@ class session:
         """Deletes a connection"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}",
+            f"{self.api_url}/connections/{str(identifier)}",
             params=self.params,
             verify=False,
             timeout=20
@@ -1081,7 +1093,7 @@ class session:
         """Returns all connection groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups",
+            f"{self.api_url}/connectionGroups",
             params=self.params,
             verify=False,
             timeout=20
@@ -1091,7 +1103,7 @@ class session:
         """Returns all connection groups connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/ROOT/tree",
+            f"{self.api_url}/connectionGroups/ROOT/tree",
             params=self.params,
             verify=False,
             timeout=20
@@ -1102,7 +1114,7 @@ class session:
         """Returns specific connection group"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}",
+            f"{self.api_url}/connectionGroups/{identifier}",
             params=self.params,
             verify=False,
             timeout=20
@@ -1113,7 +1125,7 @@ class session:
         """Returns specific connection group connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}/tree",
+            f"{self.api_url}/connectionGroups/{identifier}/tree",
             params=self.params,
             verify=False,
             timeout=20
@@ -1127,7 +1139,7 @@ class session:
         """Creates a connection group"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups",
+            f"{self.api_url}/connectionGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -1156,7 +1168,7 @@ class session:
         """
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}",
+            f"{self.api_url}/connectionGroups/{identifier}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -1179,7 +1191,7 @@ class session:
         """Deletes a connection group"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{connection_group}",
+            f"{self.api_url}/connectionGroups/{connection_group}",
             params=self.params,
             verify=False,
             timeout=20
@@ -1189,7 +1201,7 @@ class session:
         """Returns sharing profiles"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles",
+            f"{self.api_url}/sharingProfiles",
             verify=False,
             timeout=20,
             params=self.params
@@ -1200,7 +1212,7 @@ class session:
         """Returns sharing profiles"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}",
+            f"{self.api_url}/sharingProfiles/{str(sharing_id)}",
             verify=False,
             timeout=20,
             params=self.params
@@ -1213,7 +1225,7 @@ class session:
         """Creates connection sharing profile"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles",
+            f"{self.api_url}/sharingProfiles",
             headers={"Content-Type": "application/json"},
             verify=False,
             timeout=20,
@@ -1233,7 +1245,7 @@ class session:
         """Deletes connection sharing profile"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{identifier}",
+            f"{self.api_url}/sharingProfiles/{identifier}",
             headers={"Content-Type": "application/json"},
             verify=False,
             timeout=20,
