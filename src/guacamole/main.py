@@ -149,6 +149,18 @@ class session:
             verify=False
         ).json(), indent=2)
 
+    def list_user_connections(self, user: str):
+        """Lists a user's Connections"""
+
+        return json.dumps(requests.get(
+            f"{host}/api/session/data/{data_source}/users/{user}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json={"path": "/connectionPermissions/"},
+            verify=False,
+            timeout=5
+        ).json(), indent=2)
+
     def detail_user(self, username: str):
         """Returns users details"""
 
