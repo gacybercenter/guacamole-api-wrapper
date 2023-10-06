@@ -1109,15 +1109,20 @@ class session:
             timeout=20
         ).json(), indent=2)
 
-    def details_connection_group(self,
-                                 identifier: str) -> object:
-        """Returns specific connection group"""
+    def details_sharing_profile(self,
+                                sharing_id: int,
+                                option: str) -> object:
+        """Returns sharing profiles"""
+
+        if not option:
+            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
+        elif option == "params":
+            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}/parameters"
 
         return json.dumps(requests.get(
-            f"{self.api_url}/connectionGroups/{identifier}",
-            params=self.params,
+            host,
             verify=False,
-            timeout=20
+            params=self.params,
         ).json(), indent=2)
 
     def details_connection_group_connections(self,
