@@ -1224,7 +1224,7 @@ class session:
         ).json(), indent=2)
 
     def create_sharing_profile(self,
-                               identifier: str,
+                               primaryConnectionIdentifier: str,
                                name: str,
                                parameters: dict = None) -> requests.Response:
         """Creates connection sharing profile"""
@@ -1236,7 +1236,30 @@ class session:
             timeout=20,
             params=self.params,
             json={
-                "primaryConnectionIdentifier": identifier,
+                "primaryConnectionIdentifier": primaryConnectionIdentifier,
+                "name": name,
+                "parameters": {
+                    "read-only": parameters.get("read-only", "")
+                },
+                "attributes": {}
+            }
+        )
+
+    def update_sharing_profile(self,
+                               primaryConnectionIdentifier: str,
+                               name: str,
+                               identifier: str,
+                               parameters: dict = None) -> requests.Response:
+        """Updates connection sharing profile"""
+
+        return requests.post(
+            f"{self.api_url}/sharingProfiles/{identifier}",
+            headers={"Content-Type": "application/json"},
+            verify=False,
+            timeout=20,
+            params=self.params,
+            json={
+                "primaryConnectionIdentifier": primaryConnectionIdentifier,
                 "name": name,
                 "parameters": {
                     "read-only": parameters.get("read-only", "")
