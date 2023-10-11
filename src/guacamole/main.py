@@ -6,89 +6,114 @@ import json
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 socket.setdefaulttimeout(0.5)
 
+
 class session:
-    def __init__(self, host: str, data_source: str, username: str, password: str):
+    """
+    Guacamole Session Class. Used to interface with the Guacamole API.
+    
+    Example usage for getting the current Guacamole users:
+    gconn = guacamole.session('https://guacamole.org',
+                              'mysql',
+                              guac_user,
+                              guac_pass)
+    users = gconn.list_users()
+    """
+
+    def __init__(self,
+                 host: str,
+                 data_source: str,
+                 username: str,
+                 password: str):
         self.host = host
         self.username = username
         self.password = password
         self.data_source = data_source
+        self.api_url = f"{self.host}/api/session/data/{self.data_source}"
         self.token = self.generate_token()
         self.params = {"token": self.token}
 
-    def generate_token(self):
+    def generate_token(self) -> object:
         """Returns a token"""
 
         return requests.post(
             f"{self.host}/api/tokens",
             data={"username": self.username, "password": self.password},
             verify=False,
+            timeout=20,
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         ).json()['authToken']
 
-    def delete_token(self):
+    def delete_token(self) -> object:
         """Deletes a token"""
 
         return requests.delete(
             f"{self.host}/api/tokens/{self.token}",
             params=self.params,
             verify=False,
+            timeout=20
         )
 
-    def list_schema_users(self):
+    def list_schema_users(self) -> object:
         """Returns schema for user attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/userAttributes",
+            f"{self.api_url}/schema/userAttributes",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_schema_groups(self):
+    def list_schema_groups(self) -> object:
         """Returns schema for group attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/userGroupAttributes",
+            f"{self.api_url}/schema/userGroupAttributes",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_schema_connections(self):
+    def list_schema_connections(self) -> object:
         """Returns schema for connection attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/connectionAttributes",
+            f"{self.api_url}/schema/connectionAttributes",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_schema_sharing(self):
+    def list_schema_sharing(self) -> object:
         """Returns schema for sharing attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/sharingProfileAttributes",
+            f"{self.api_url}/schema/sharingProfileAttributes",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_schema_connection_group(self):
+    def list_schema_connection_group(self) -> object:
         """Returns schema for connection group attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/connectionGroupAttributes",
+            f"{self.api_url}/schema/connectionGroupAttributes",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_schema_protocols(self):
+    def list_schema_protocols(self) -> object:
         """Returns schema for protocols attributes"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/schema/protocols",
+            f"{self.api_url}/schema/protocols",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_patches(self):
+    def list_patches(self) -> object:
         """
         Returns patches
         TODO: NEED TO EXPLORE FURTHER API CAPABILITIES FROM THIS PATH
@@ -97,20 +122,21 @@ class session:
         return json.dumps(requests.get(
             f"{self.host}/api/patches",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-
-    def list_languages(self):
+    def list_languages(self) -> object:
         """Returns available locales"""
 
         return json.dumps(requests.get(
             f"{self.host}/api/languages",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_extensions(self):
+    def detail_extensions(self) -> object:
         """
         Returns details for installed extensions
         TODO: VALIDATE FUNCTION OPERATES
@@ -119,121 +145,142 @@ class session:
         return json.dumps(requests.get(
             f"{self.host}/api/session/ext/{self.data_source}",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_history_users(self):
+    def list_history_users(self) -> object:
         """Returns user history"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/history/users",
+            f"{self.api_url}/history/users",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_history_connections(self):
+    def list_history_connections(self) -> object:
         """Returns user connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/history/connections",
+            f"{self.api_url}/history/connections",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_users(self):
+    def list_users(self) -> object:
         """Returns users"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users",
+            f"{self.api_url}/users",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_user(self, username: str):
+    def detail_user(self,
+                    username: str) -> object:
         """Returns users details"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_user_permissions(self, username: str):
+    def detail_user_permissions(self,
+                                username: str) -> object:
         """Returns users permissions"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+            f"{self.api_url}/users/{username}/permissions",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_user_effective_permissions(self, username: str):
+    def detail_user_effective_permissions(self,
+                                          username: str) -> object:
         """Returns users efffective permissions"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/effectivePermissions",
+            f"{self.api_url}/users/{username}/effectivePermissions",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_user_groups(self, username: str):
+    def detail_user_groups(self,
+                           username: str) -> object:
         """Returns users groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/userGroups",
+            f"{self.api_url}/users/{username}/userGroups",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_user_history(self, username: str):
+    def detail_user_history(self,
+                            username: str) -> object:
         """Returns users history"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/history",
+            f"{self.api_url}/users/{username}/history",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_self(self):
+    def detail_self(self) -> object:
         """Returns current user details"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/self",
+            f"{self.api_url}/self",
             params=self.params,
-            verify=False
+            verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def create_user(self, username: str, password: str, attributes: dict = {}):
+    def create_user(self,
+                    username: str,
+                    password: str,
+                    attributes: dict = None) -> requests.Response:
         """Creates user"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/users",
+            f"{self.api_url}/users",
             headers={"Content-Type": "application/json"},
             verify=False,
+            timeout=20,
             params=self.params,
             json={
                 "username": username,
                 "password": password,
                 "attributes": {
-                        "disabled": attributes.get("disabled", ""),
-                        "expired": attributes.get("expired", ""),
-                        "access-window-start": attributes.get("access-window-start", ""),
-                        "access-window-end": attributes.get("access-window-end", ""),
-                        "valid-from": attributes.get("valid-from", ""),
-                        "valid-until": attributes.get("valid-until", ""),
-                        "timezone": attributes.get("timezone", ""),
-                        "guac-full-name": attributes.get("guac-full-name", ""),
-                        "guac-organization": attributes.get("guac-organization", ""),
-                        "guac-organizational-role": attributes.get("guac-organizational-role", "")
-                },
+                    "disabled": attributes.get("disabled", ""),
+                    "expired": attributes.get("expired", ""),
+                    "access-window-start": attributes.get("access-window-start", ""),
+                    "access-window-end": attributes.get("access-window-end", ""),
+                    "valid-from": attributes.get("valid-from", ""),
+                    "valid-until": attributes.get("valid-until", ""),
+                    "timezone": attributes.get("timezone", ""),
+                    "guac-full-name": attributes.get("guac-full-name", ""),
+                    "guac-organization": attributes.get("guac-organization", ""),
+                    "guac-organizational-role": attributes.get("guac-organizational-role", "")
+                }
             }
         )
 
-    def update_user(self, username: str, attributes: dict = {}):
+    def update_user(self,
+                    username: str,
+                    attributes: dict = None) -> requests.Response:
         """Updates a user"""
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -253,13 +300,17 @@ class session:
                 }
             },
             verify=False,
+            timeout=20
         )
 
-    def update_user_password(self, username: str, oldpassword: str, newpassword: str):
+    def update_user_password(self,
+                             username: str,
+                             oldpassword: str,
+                             newpassword: str) -> requests.Response:
         """Updates a user Password"""
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}/password",
+            f"{self.api_url}/users/{username}/password",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -267,14 +318,18 @@ class session:
                 "newPassword": newpassword
             },
             verify=False,
+            timeout=20
         )
 
-    def update_user_group(self, username: str, groupname: str, operation: str = "add"):
+    def update_user_group(self,
+                          username: str,
+                          groupname: str,
+                          operation: str = "add") -> requests.Response | str:
         """Assign to or Remove user from group"""
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/userGroups",
+                f"{self.api_url}/users/{username}/userGroups",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -285,24 +340,32 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def update_user_connection(self, username: str, connectionid: str, operation: str = "add", isgroup: bool = False):
+    def update_user_connection(self,
+                               username: str,
+                               connectionid: str,
+                               operation: str = "add",
+                               conn_type: str = "connection") -> requests.Response | str:
         """
         Change a user Connections
         TODO: VALIDATE FUNCTION OPERATES
         """
 
-        if not isgroup:
+        if conn_type == "connection":
             path = f"/connectionPermissions/{connectionid}"
-        elif isgroup:
+        elif conn_type == "group":
             path = f"/connectionGroupPermissions/{connectionid}"
+        elif conn_type == "sharing profile":
+            path = f"/sharingProfilePermissions/{connectionid}"
+        else:
+            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing profile'"
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+                f"{self.api_url}/users/{username}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -313,11 +376,19 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires 'add' or 'remove'"
 
-    def update_user_permissions(self, username: str, operation: str = "add", cuser: bool = False, cusergroup: bool = False, cconnect: bool = False, cconnectgroup: bool = False, cshare: bool = False, admin: bool = False):
+    def update_user_permissions(self,
+                                username: str,
+                                operation: str = "add",
+                                cuser: bool = False,
+                                cusergroup: bool = False,
+                                cconnect: bool = False,
+                                cconnectgroup: bool = False,
+                                cshare: bool = False,
+                                admin: bool = False) -> requests.Response | str:
         """Change a user Connections"""
 
         path = f"/userPermissions/{username}"
@@ -325,97 +396,104 @@ class session:
         permissions = []
 
         permissions.append({
-                "op": operation,
-                "path": path,
-                "value": "UPDATE"
-                })
+            "op": operation,
+            "path": path,
+            "value": "UPDATE"
+        })
 
         if cuser:
             permissions.append({
-                            "op": operation,
-                            "path": "/systemPermissions",
-                            "value": "CREATE_USER"
-                        })
+                "op": operation,
+                "path": "/systemPermissions",
+                "value": "CREATE_USER"
+            })
 
         if cusergroup:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_USER_GROUP"
-                    })
+            })
 
         if cconnect:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_CONNECTION"
-                    })
+            })
 
         if cconnectgroup:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_CONNECTION_GROUP"
-                    })
+            })
 
         if cshare:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_SHARING_PROFILE"
-                    })
+            })
 
         if admin:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "ADMINISTER"
-                    })
+            })
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/users/{username}/permissions",
+                f"{self.api_url}/users/{username}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=permissions,
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def delete_user(self, username: str):
+    def delete_user(self,
+                    username: str) -> requests.Response:
         """Deletes user"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/users/{username}",
+            f"{self.api_url}/users/{username}",
             params=self.params,
             verify=False,
+            timeout=20
         )
 
-    def list_usergroups(self):
+    def list_usergroups(self) -> object:
         """Returns user groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups",
+            f"{self.api_url}/userGroups",
             params=self.params,
             verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def detail_usergroup(self, groupname: str):
+    def detail_usergroup(self, groupname: str) -> object:
         """Returns user groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}",
+            f"{self.api_url}/userGroups/{groupname}",
             params=self.params,
             verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def update_usergroup_member(self, username: str, groupname: str, operation: str = "add"):
+    def update_usergroup_member(self,
+                                username: str,
+                                groupname: str,
+                                operation: str = "add") -> requests.Response | str:
         """Assign to or Remove user from group"""
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/memberUsers",
+                f"{self.api_url}/userGroups/{groupname}/memberUsers",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -426,16 +504,19 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def update_usergroup_membergroup(self, identifier: int, groupname: str, operation: str = "add"):
+    def update_usergroup_membergroup(self,
+                                     identifier: int,
+                                     groupname: str,
+                                     operation: str = "add") -> requests.Response | str:
         """Assign to or Remove group from group"""
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/memberUserGroup",
+                f"{self.api_url}/userGroups/{groupname}/memberUserGroup",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -446,16 +527,19 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def update_usergroup_parentgroup(self, identifier: int, groupname: str, operation: str = "add"):
+    def update_usergroup_parentgroup(self,
+                                     identifier: int,
+                                     groupname: str,
+                                     operation: str = "add") -> requests.Response | str:
         """Assign to or Remove group from group"""
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/userGroups",
+                f"{self.api_url}/userGroups/{groupname}/userGroups",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -466,80 +550,91 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def update_usergroup_permissions(self, groupname: str, operation: str = "add", cuser: bool = False, cusergroup: bool = False, cconnect: bool = False, cconnectgroup: bool = False, cshare: bool = False, admin: bool = False):
+    def update_usergroup_permissions(self,
+                                     groupname: str,
+                                     operation: str = "add",
+                                     cuser: bool = False,
+                                     cusergroup: bool = False,
+                                     cconnect: bool = False,
+                                     cconnectgroup: bool = False,
+                                     cshare: bool = False,
+                                     admin: bool = False) -> requests.Response | str:
         """Update permissions of user group"""
 
         permissions = []
 
         permissions.append({
-                "op": operation,
-                "path": f"/connectionPermissions/{groupname}",
-                "value": "READ"
-                })
+            "op": operation,
+            "path": f"/connectionPermissions/{groupname}",
+            "value": "READ"
+        })
 
         if cuser:
             permissions.append({
-                            "op": operation,
-                            "path": "/systemPermissions",
-                            "value": "CREATE_USER"
-                        })
+                "op": operation,
+                "path": "/systemPermissions",
+                "value": "CREATE_USER"
+            })
 
         if cusergroup:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_USER_GROUP"
-                    })
+            })
 
         if cconnect:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_CONNECTION"
-                    })
+            })
 
         if cconnectgroup:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_CONNECTION_GROUP"
-                    })
+            })
 
         if cshare:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "CREATE_SHARING_PROFILE"
-                    })
+            })
 
         if admin:
             permissions.append({
-                        "op": operation,
-                        "path": "/systemPermissions",
+                "op": operation,
+                "path": "/systemPermissions",
                         "value": "ADMINISTER"
-                    })
+            })
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/permissions",
+                f"{self.api_url}/userGroups/{groupname}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=permissions,
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def update_usergroup_connection(self, connection_id: int, groupname: str, operation: str = "add"):
+    def update_usergroup_connection(self,
+                                    connection_id: int,
+                                    groupname: str,
+                                    operation: str = "add") -> requests.Response | str:
         """Assign to or Remove connection from group"""
 
-        if operation == "add" or operation == "remove":
+        if operation in ["add", "remove"]:
             return requests.patch(
-                f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}/permissions",
+                f"{self.api_url}/userGroups/{groupname}/permissions",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json=[
@@ -550,15 +645,17 @@ class session:
                     }
                 ],
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires (add or remove)"
 
-    def create_usergroup(self, groupname: str, attributes: dict = {}):
+    def create_usergroup(self,
+                         groupname: str,
+                         attributes: dict = None) -> requests.Response:
         """Creates a user group"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups",
+            f"{self.api_url}/userGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -568,13 +665,16 @@ class session:
                 }
             },
             verify=False,
+            timeout=20
         )
 
-    def update_usergroup(self, groupname: str, attributes: dict = {}):
+    def update_usergroup(self,
+                         groupname: str,
+                         attributes: dict = None) -> requests.Response:
         """Updates a user group"""
-        
+
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{groupname}",
+            f"{self.api_url}/userGroups/{groupname}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -584,80 +684,92 @@ class session:
                 }
             },
             verify=False,
+            timeout=20
         )
 
-    def delete_usergroup(self, user_group: str):
+    def delete_usergroup(self,
+                         user_group: str) -> requests.Response:
         """Deletes a user group"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/userGroups/{user_group}",
+            f"{self.api_url}/userGroups/{user_group}",
             params=self.params,
             verify=False,
+            timeout=20
         )
 
-    def list_tunnels(self):
+    def list_tunnels(self) -> object:
         """Returns tunnels"""
 
         return json.dumps(requests.get(
             f"{self.host}/api/session/tunnels",
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def detail_tunnels(self, tunnel_id: int):
+    def detail_tunnels(self,
+                       tunnel_id: int) -> object:
         """Returns tunnels"""
 
         return json.dumps(requests.get(
             f"{self.host}/api/session/tunnels/{str(tunnel_id)}/activeConnection/connection/sharingProfiles",
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def list_connections(self, active: bool = False):
+    def list_connections(self,
+                         active: bool = False) -> object:
         """
         NOTE: Returns connections or active connections
         * @params active (boolean value) toggles viewing active connections
         """
 
         if active:
-            host = f"{self.host}/api/session/data/{self.data_source}/activeConnections"
+            host = f"{self.api_url}/activeConnections"
         else:
-            host = f"{self.host}/api/session/data/{self.data_source}/connections"
+            host = f"{self.api_url}/connections"
 
         return json.dumps(requests.get(
             host,
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def detail_connection(self, identifier: int, option: str = None):
+    def detail_connection(self,
+                          identifier: int,
+                          option: str = None) -> object:
         """
         NOTE: Returns connection details and parameters
         * @params option (None, params, history, sharing)
         """
 
         if not option:
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}"
+            host = f"{self.api_url}/connections/{str(identifier)}"
         elif option == "params":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/parameters"
+            host = f"{self.api_url}/connections/{str(identifier)}/parameters"
         elif option == "history":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/history"
+            host = f"{self.api_url}/connections/{str(identifier)}/history"
         elif option == "sharing":
-            host = f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}/sharingProfiles"
+            host = f"{self.api_url}/connections/{str(identifier)}/sharingProfiles"
         else:
             return "Invalid option, requires no entry or (params, history, or sharing)"
 
         return json.dumps(requests.get(
             host,
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def kill_active_connection(self, connection_id: str):
+    def kill_active_connection(self,
+                               connection_id: str) -> requests.Response:
         """Kill an active connection to a hosted system"""
 
         return requests.patch(
-            f"{self.host}/api/session/data/{self.data_source}/activeConnections",
+            f"{self.api_url}/activeConnections",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json=[
@@ -667,19 +779,27 @@ class session:
                 }
             ],
             verify=False,
+            timeout=20
         )
 
-    def manage_connection(self, request: str, type: str, name: str, parent_identifier: int, identifier: int = None, parameters: dict = {}, attributes: dict = {}):
+    def manage_connection(self,
+                          request: str,
+                          protocol: str,
+                          name: str,
+                          parent_identifier: int,
+                          identifier: int = None,
+                          parameters: dict = None,
+                          attributes: dict = None) -> requests.Response | str:
         """
         NOTE Creates an SSH connection
         * @param request = post (create) or put (update)
-        * @param type = ssh, rdp, vnc, telnet, kubernetes
+        * @param protocol = ssh, rdp, vnc, telnet, kubernetes
         * @param parent_identifier is required if placing in a specific connection group
         * @param parameters = {"hostname": "", "port": "", "username": "", "password": ""}
         * @param attributes = {"max-connections": "", "max-connections-per-user": "" }
         """
 
-        if type == "vnc":
+        if protocol == "vnc":
             parameters = {
                 "port": parameters.get("port", ""),
                 "read-only": parameters.get("read-only", ""),
@@ -715,7 +835,7 @@ class session:
                 "hostname": parameters.get("hostname", ""),
             }
 
-        if type == "ssh":
+        if protocol == "ssh":
             parameters = {
                 "port": parameters.get("port", ""),
                 "read-only": parameters.get("read-only", ""),
@@ -758,7 +878,7 @@ class session:
                 "sftp-root-directory": parameters.get("sftp-root-directory", ""),
             }
 
-        if type == "rdp":
+        if protocol == "rdp":
             parameters = {
                 "port": parameters.get("port", ""),
                 "read-only": parameters.get("read-only", ""),
@@ -839,7 +959,7 @@ class session:
                 "sftp-directory": parameters.get("sftp-directory", ""),
             }
 
-        if type == "telnet":
+        if protocol == "telnet":
             parameters = {
                 "port": parameters.get("port", ""),
                 "read-only": parameters.get("read-only", ""),
@@ -878,7 +998,7 @@ class session:
                 "recording-name": parameters.get("recording-name", ""),
             }
 
-        if type == "kubernetes":
+        if protocol == "kubernetes":
             parameters = {
                 "port": parameters.get("port", ""),
                 "read-only": parameters.get("read-only", ""),
@@ -919,110 +1039,122 @@ class session:
             }
 
         attributes = {
-                "max-connections": attributes.get("max-connections", ""),
-                "max-connections-per-user": attributes.get("max-connections-per-user", ""),
-                "weight": attributes.get("weight", ""),
-                "failover-only": attributes.get("failover-only", ""),
-                "guacd-port": attributes.get("guacd-port", ""),
-                "guacd-encryption": attributes.get("guacd-encryption", ""),
-                "guacd-hostname": attributes.get("guacd-hostname", ""),
+            "max-connections": attributes.get("max-connections", ""),
+            "max-connections-per-user": attributes.get("max-connections-per-user", ""),
+            "weight": attributes.get("weight", ""),
+            "failover-only": attributes.get("failover-only", ""),
+            "guacd-port": attributes.get("guacd-port", ""),
+            "guacd-encryption": attributes.get("guacd-encryption", ""),
+            "guacd-hostname": attributes.get("guacd-hostname", ""),
         }
 
         if request == "post":
-            json = {
-                "parentIdentifier": str(parent_identifier),
-                "name": name,
-                "protocol": type,
-                "parameters": parameters,
-                "attributes": attributes,
-            }
-
-        if request == "put":
-            json={
-                "parentIdentifier": str(parent_identifier),
-                "name": name,
-                "identifier": str(identifier),
-                "activeConnections": 0,
-                "protocol": type,
-                "parameters": parameters,
-                "attributes": attributes,
-            }
-
-        if request == "post":
             return requests.post(
-                f"{self.host}/api/session/data/{self.data_source}/connections",
+                f"{self.api_url}/connections",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
-                json=json,
+                json={
+                    "parentIdentifier": str(parent_identifier),
+                    "name": name,
+                    "protocol": protocol,
+                    "parameters": parameters,
+                    "attributes": attributes,
+                },
                 verify=False,
+                timeout=20
             )
-        elif request == "put":
+        if request == "put":
             return requests.put(
-                f"{self.host}/api/session/data/{self.data_source}/connections",
+                f"{self.api_url}/connections",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
-                json=json,
+                json={
+                    "parentIdentifier": str(parent_identifier),
+                    "name": name,
+                    "identifier": str(identifier),
+                    "activeConnections": 0,
+                    "protocol": protocol,
+                    "parameters": parameters,
+                    "attributes": attributes,
+                },
                 verify=False,
+                timeout=20
             )
-        else:
-            return "Invalid request option, requires (post or put)"
+        return "Invalid request option, requires (post or put)"
 
-    def delete_connection(self, identifier: int):
+    def delete_connection(self,
+                          identifier: int) -> requests.Response:
         """Deletes a connection"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/connections/{str(identifier)}",
+            f"{self.api_url}/connections/{str(identifier)}",
             params=self.params,
             verify=False,
+            timeout=20
         )
 
-    def list_connection_groups(self):
+    def list_connection_groups(self) -> object:
         """Returns all connection groups"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups",
+            f"{self.api_url}/connectionGroups",
             params=self.params,
             verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def list_connection_group_connections(self):
+    def list_connection_group_connections(self) -> object:
         """Returns all connection groups connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/ROOT/tree",
+            f"{self.api_url}/connectionGroups/ROOT/tree",
             params=self.params,
             verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def details_connection_group(self, identifier: str):
-        """Returns specific connection group"""
+    def details_sharing_profile(self,
+                                sharing_id: int,
+                                option: str) -> object:
+        """Returns sharing profiles"""
+
+        if not option:
+            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
+        elif option == "params":
+            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}/parameters"
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}",
-            params=self.params,
+            host,
             verify=False,
+            params=self.params,
         ).json(), indent=2)
 
-    def details_connection_group_connections(self, identifier: str):
+    def details_connection_group_connections(self,
+                                             identifier: str) -> object:
         """Returns specific connection group connections"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}/tree",
+            f"{self.api_url}/connectionGroups/{identifier}/tree",
             params=self.params,
             verify=False,
+            timeout=20
         ).json(), indent=2)
 
-    def create_connection_group(self, name: str, type: str, parent_identifier: int = None, attributes: dict = {}):
+    def create_connection_group(self,
+                                group_name: str,
+                                group_type: str,
+                                parent_identifier: int = None,
+                                attributes: dict = None) -> requests.Response:
         """Creates a connection group"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups",
+            f"{self.api_url}/connectionGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
                 "parentIdentifier": str(parent_identifier),
-                "name": name,
-                "type": type,
+                "name": group_name,
+                "type": group_type,
                 "attributes": {
                     "max-connections": attributes.get("max-connections", ""),
                     "max-connections-per-user": attributes.get("max-connections-per-user", ""),
@@ -1030,23 +1162,29 @@ class session:
                 }
             },
             verify=False,
+            timeout=20
         )
 
-    def update_connection_group(self, identifier: str, name: str, type: str, parent_identifier: int = None, attributes: dict = {}):
+    def update_connection_group(self,
+                                identifier: str,
+                                group_name: str,
+                                group_type: str,
+                                parent_identifier: int = None,
+                                attributes: dict = None) -> requests.Response:
         """
         Updates a connection group
         TODO: IF parent_identifier IS NOT ROOT THEN int IS REQUIRED
         """
 
         return requests.put(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{identifier}",
+            f"{self.api_url}/connectionGroups/{identifier}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
                 "parentIdentifier": str(parent_identifier),
                 "identifier": identifier,
-                "name": name,
-                "type": type,
+                "name": group_name,
+                "type": group_type,
                 "attributes": {
                     "max-connections": attributes.get("max-connections", ""),
                     "max-connections-per-user": attributes.get("max-connections-per-user", ""),
@@ -1054,59 +1192,94 @@ class session:
                 }
             },
             verify=False,
+            timeout=20
         )
 
-    def delete_connection_group(self, connection_group: str):
+    def delete_connection_group(self,
+                                connection_group: str) -> requests.Response:
         """Deletes a connection group"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/connectionGroups/{connection_group}",
+            f"{self.api_url}/connectionGroups/{connection_group}",
             params=self.params,
             verify=False,
+            timeout=20
         )
 
-    def list_sharing_profile(self):
+    def list_sharing_profile(self) -> object:
         """Returns sharing profiles"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles",
+            f"{self.api_url}/sharingProfiles",
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def details_sharing_profile(self, sharing_id: int):
+    def details_sharing_profile(self,
+                                sharing_id: int) -> object:
         """Returns sharing profiles"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}",
+            f"{self.api_url}/sharingProfiles/{str(sharing_id)}",
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         ).json(), indent=2)
 
-    def create_sharing_profile(self, identifier: int, name: str, parameters: dict = {}):
+    def create_sharing_profile(self,
+                               primaryConnectionIdentifier: str,
+                               name: str,
+                               parameters: dict = None) -> requests.Response:
         """Creates connection sharing profile"""
 
         return requests.post(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles",
+            f"{self.api_url}/sharingProfiles",
             headers={"Content-Type": "application/json"},
             verify=False,
+            timeout=20,
             params=self.params,
             json={
-                "primaryConnectionIdentifier": str(identifier),
+                "primaryConnectionIdentifier": primaryConnectionIdentifier,
                 "name": name,
                 "parameters": {
                     "read-only": parameters.get("read-only", "")
                 },
                 "attributes": {}
-            },
+            }
         )
 
-    def delete_sharing_profile(self, identifier: int):
+    def update_sharing_profile(self,
+                               primaryConnectionIdentifier: str,
+                               name: str,
+                               identifier: str,
+                               parameters: dict = None) -> requests.Response:
+        """Updates connection sharing profile"""
+
+        return requests.post(
+            f"{self.api_url}/sharingProfiles/{identifier}",
+            headers={"Content-Type": "application/json"},
+            verify=False,
+            timeout=20,
+            params=self.params,
+            json={
+                "primaryConnectionIdentifier": primaryConnectionIdentifier,
+                "name": name,
+                "parameters": {
+                    "read-only": parameters.get("read-only", "")
+                },
+                "attributes": {}
+            }
+        )
+
+    def delete_sharing_profile(self,
+                               identifier: str) -> requests.Response:
         """Deletes connection sharing profile"""
 
         return requests.delete(
-            f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(identifier)}",
+            f"{self.api_url}/sharingProfiles/{identifier}",
             headers={"Content-Type": "application/json"},
             verify=False,
-            params=self.params,
+            timeout=20,
+            params=self.params
         )
