@@ -356,12 +356,12 @@ class session:
 
         if conn_type == "connection":
             path = f"/connectionPermissions/{connectionid}"
-        elif conn_type == "group"::
+        elif conn_type == "group":
             path = f"/connectionGroupPermissions/{connectionid}"
-        elif conn_type == "sharing"::
+        elif conn_type == "sharing profile":
             path = f"/sharingProfilePermissions/{connectionid}"
         else:
-            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing'"
+            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing profile'"
 
         if operation in ["add", "remove"]:
             return requests.patch(
