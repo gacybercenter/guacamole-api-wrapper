@@ -344,41 +344,73 @@ class session:
             )
         return "Invalid Operation, requires (add or remove)"
 
-    def update_user_connection(self,
-                               username: str,
-                               connectionid: str,
-                               operation: str = "add",
-                               conn_type: str = "connection") -> requests.Response | str:
-        """
-        Change a user Connections
-        TODO: VALIDATE FUNCTION OPERATES
-        """
+def update_connection_permissions(self,
+                                  username: str,
+                                  connection_ids: str | list,
+                                  operation: str = "add",
+                                  permission: str = "connection") -> requests.Response | str:
+    """
+    Update the permissions for a given user's connection(s) in the API.
 
-        if conn_type == "connection":
-            path = f"/connectionPermissions/{connectionid}"
-        elif conn_type == "group":
-            path = f"/connectionGroupPermissions/{connectionid}"
-        elif conn_type == "sharing profile":
-            path = f"/sharingProfilePermissions/{connectionid}"
-        else:
-            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing profile'"
+    Args:
+        username: The username of the user.
+        connection_ids: The ID(s) of the connection(s) to update permissions for.
+            Can be a string or a list of strings.
+        operation: The operation to perform on the permissions.
+            Defaults to "add". Must be either "add" or "remove".
+        permission: The type of permission to update.
+            Must be one of "connection", "group", "sharing profile", or "active connection".
+            Defaults to "connection".
+    
+    Returns:
+        A requests.Response object if the request is successful. 
+        A string error message if the request fails.
+        
+    Raises:
+        ValueError: If an argument is not valid.
+    """
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/users/{username}/permissions",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": path,
-                        "value": "READ"
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires 'add' or 'remove'"
+    if operation not in ["add", "remove"]:
+        return "Invalid operation, see docstring for valid args"
+
+    if permission == "connection":
+        path = "/connectionPermissions/"
+    elif permission == "group":
+        path = "/connectionGroupPermissions/"
+    elif permission == "sharing profile":
+        path = "/sharingProfilePermissions/"
+    elif permission == "active connection":
+        path = "/activeConnectionPermissions/"
+    else:
+        raise ValueError(f"Invalid permission type: {permission}")
+
+    if isinstance(connection_ids, str):
+        permissions = [
+            {
+                "op": operation,
+                "path": path + connection_ids,
+                "value": "READ"
+            }
+        ]
+    elif isinstance(connection_ids, list):
+        permissions = [
+            {
+                "op": operation,
+                "path": path + connection_id,
+                "value": "READ"
+            } for connection_id in connection_ids
+        ]
+    else:
+        raise ValueError(f"Invalid connection_ids type: {type(connection_ids)}")
+
+    return requests.patch(
+        f"{self.api_url}/users/{username}/permissions",
+        headers={"Content-Type": "application/json"},
+        params=self.params,
+        json=permissions,
+        verify=False,
+        timeout=20
+    )
 
     def update_user_permissions(self,
                                 username: str,
