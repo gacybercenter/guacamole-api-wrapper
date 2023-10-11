@@ -348,16 +348,20 @@ class session:
                                username: str,
                                connectionid: str,
                                operation: str = "add",
-                               isgroup: bool = False) -> requests.Response | str:
+                               conn_type: str = "connection") -> requests.Response | str:
         """
         Change a user Connections
         TODO: VALIDATE FUNCTION OPERATES
         """
 
-        if not isgroup:
+        if conn_type == "connection":
             path = f"/connectionPermissions/{connectionid}"
-        elif isgroup:
+        elif conn_type == "group"::
             path = f"/connectionGroupPermissions/{connectionid}"
+        elif conn_type == "sharing"::
+            path = f"/sharingProfilePermissions/{connectionid}"
+        else:
+            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing'"
 
         if operation in ["add", "remove"]:
             return requests.patch(
@@ -374,7 +378,7 @@ class session:
                 verify=False,
                 timeout=20
             )
-        return "Invalid Operation, requires (add or remove)"
+        return "Invalid Operation, requires 'add' or 'remove'"
 
     def update_user_permissions(self,
                                 username: str,
