@@ -10,7 +10,7 @@ socket.setdefaulttimeout(0.5)
 class session:
     """
     Guacamole Session Class. Used to interface with the Guacamole API.
-    
+
     Example usage for getting the current Guacamole users:
     gconn = guacamole.session('https://guacamole.org',
                               'mysql',
@@ -247,7 +247,7 @@ class session:
     def create_user(self,
                     username: str,
                     password: str,
-                    attributes: dict = None) -> requests.Response:
+                    attributes: dict = {}) -> requests.Response:
         """Creates user"""
 
         return requests.post(
@@ -276,7 +276,7 @@ class session:
 
     def update_user(self,
                     username: str,
-                    attributes: dict = None) -> requests.Response:
+                    attributes: dict = {}) -> requests.Response:
         """Updates a user"""
 
         return requests.put(
@@ -345,10 +345,10 @@ class session:
         return "Invalid Operation, requires (add or remove)"
 
     def update_connection_permissions(self,
-                                    username: str,
-                                    connection_ids: str | list,
-                                    operation: str = "add",
-                                    permission: str = "connection") -> requests.Response | str:
+                                      username: str,
+                                      connection_ids: str | list,
+                                      operation: str = "add",
+                                      permission: str = "connection") -> requests.Response | str:
         """
         Update the permissions for a given user's connection(s) in the API.
 
@@ -361,11 +361,11 @@ class session:
             permission: The type of permission to update.
                 Must be one of "connection", "group", "sharing profile", or "active connection".
                 Defaults to "connection".
-        
+
         Returns:
             A requests.Response object if the request is successful. 
             A string error message if the request fails.
-            
+
         Raises:
             ValueError: If an argument is not valid.
         """
@@ -401,7 +401,8 @@ class session:
                 } for connection_id in connection_ids
             ]
         else:
-            raise ValueError(f"Invalid connection_ids type: {type(connection_ids)}")
+            raise ValueError(
+                f"Invalid connection_ids type: {type(connection_ids)}")
 
         return requests.patch(
             f"{self.api_url}/users/{username}/permissions",
@@ -683,7 +684,7 @@ class session:
 
     def create_usergroup(self,
                          groupname: str,
-                         attributes: dict = None) -> requests.Response:
+                         attributes: dict = {}) -> requests.Response:
         """Creates a user group"""
 
         return requests.post(
@@ -702,7 +703,7 @@ class session:
 
     def update_usergroup(self,
                          groupname: str,
-                         attributes: dict = None) -> requests.Response:
+                         attributes: dict = {}) -> requests.Response:
         """Updates a user group"""
 
         return requests.put(
@@ -820,8 +821,8 @@ class session:
                           name: str,
                           parent_identifier: int,
                           identifier: int = None,
-                          parameters: dict = None,
-                          attributes: dict = None) -> requests.Response | str:
+                          parameters: dict = {},
+                          attributes: dict = {}) -> requests.Response | str:
         """
         NOTE Creates an SSH connection
         * @param request = post (create) or put (update)
@@ -1147,18 +1148,19 @@ class session:
 
     def details_sharing_profile(self,
                                 sharing_id: int,
-                                option: str) -> object:
+                                option: str = '') -> object:
         """Returns sharing profiles"""
 
-        if not option:
-            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
-        elif option == "params":
-            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}/parameters"
+        host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
+
+        if option == "parameters":
+            host = host + "/parameters"
 
         return json.dumps(requests.get(
             host,
             verify=False,
             params=self.params,
+            timeout=20
         ).json(), indent=2)
 
     def details_connection_group_connections(self,
@@ -1176,7 +1178,7 @@ class session:
                                 group_name: str,
                                 group_type: str,
                                 parent_identifier: int = None,
-                                attributes: dict = None) -> requests.Response:
+                                attributes: dict = {}) -> requests.Response:
         """Creates a connection group"""
 
         return requests.post(
@@ -1202,7 +1204,7 @@ class session:
                                 group_name: str,
                                 group_type: str,
                                 parent_identifier: int = None,
-                                attributes: dict = None) -> requests.Response:
+                                attributes: dict = {}) -> requests.Response:
         """
         Updates a connection group
         TODO: IF parent_identifier IS NOT ROOT THEN int IS REQUIRED
@@ -1262,7 +1264,7 @@ class session:
     def create_sharing_profile(self,
                                primaryConnectionIdentifier: str,
                                name: str,
-                               parameters: dict = None) -> requests.Response:
+                               parameters: dict = {}) -> requests.Response:
         """Creates connection sharing profile"""
 
         return requests.post(
@@ -1285,7 +1287,7 @@ class session:
                                primaryConnectionIdentifier: str,
                                name: str,
                                identifier: str,
-                               parameters: dict = None) -> requests.Response:
+                               parameters: dict = {}) -> requests.Response:
         """Updates connection sharing profile"""
 
         return requests.post(
