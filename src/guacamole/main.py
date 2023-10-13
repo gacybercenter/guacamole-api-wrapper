@@ -10,7 +10,7 @@ socket.setdefaulttimeout(0.5)
 class session:
     """
     Guacamole Session Class. Used to interface with the Guacamole API.
-    
+
     Example usage for getting the current Guacamole users:
     gconn = guacamole.session('https://guacamole.org',
                               'mysql',
@@ -247,7 +247,7 @@ class session:
     def create_user(self,
                     username: str,
                     password: str,
-                    attributes: dict = None) -> requests.Response:
+                    attributes: dict = {}) -> requests.Response:
         """Creates user"""
 
         return requests.post(
@@ -276,7 +276,7 @@ class session:
 
     def update_user(self,
                     username: str,
-                    attributes: dict = None) -> requests.Response:
+                    attributes: dict = {}) -> requests.Response:
         """Updates a user"""
 
         return requests.put(
@@ -327,58 +327,94 @@ class session:
                           operation: str = "add") -> requests.Response | str:
         """Assign to or Remove user from group"""
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/users/{username}/userGroups",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": "/",
-                        "value": groupname
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
-    def update_user_connection(self,
-                               username: str,
-                               connectionid: str,
-                               operation: str = "add",
-                               conn_type: str = "connection") -> requests.Response | str:
+        return requests.patch(
+            f"{self.api_url}/users/{username}/userGroups",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=[
+                {
+                    "op": operation,
+                    "path": "/",
+                    "value": groupname
+                }
+            ],
+            verify=False,
+            timeout=20
+        )
+
+    def update_connection_permissions(self,
+                                      username: str,
+                                      connection_ids: str | list,
+                                      operation: str = "add",
+                                      permission: str = "connection") -> requests.Response | str:
         """
-        Change a user Connections
-        TODO: VALIDATE FUNCTION OPERATES
+        Update the permissions for a given user's connection(s) in the API.
+
+        Args:
+            username: The username of the user.
+            connection_ids: The ID(s) of the connection(s) to update permissions for.
+                Can be a string or a list of strings.
+            operation: The operation to perform on the permissions.
+                Defaults to "add". Must be either "add" or "remove".
+            permission: The type of permission to update.
+                Must be one of "connection", "group", "sharing profile", or "active connection".
+                Defaults to "connection".
+
+        Returns:
+            A requests.Response object if the request is successful. 
+            A string error message if the request fails.
+
+        Raises:
+            ValueError: If an argument is not valid.
         """
 
-        if conn_type == "connection":
-            path = f"/connectionPermissions/{connectionid}"
-        elif conn_type == "group":
-            path = f"/connectionGroupPermissions/{connectionid}"
-        elif conn_type == "sharing profile":
-            path = f"/sharingProfilePermissions/{connectionid}"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if permission == "connection":
+            path = "/connectionPermissions/"
+        elif permission == "group":
+            path = "/connectionGroupPermissions/"
+        elif permission == "sharing profile":
+            path = "/sharingProfilePermissions/"
+        elif permission == "active connection":
+            path = "/activeConnectionPermissions/"
         else:
-            return "Invalid Connection Type, requires 'connection', 'group', or 'sharing profile'"
+            raise ValueError(f"Invalid permission type: {permission}")
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/users/{username}/permissions",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": path,
-                        "value": "READ"
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires 'add' or 'remove'"
+        if isinstance(connection_ids, str):
+            permissions = [
+                {
+                    "op": operation,
+                    "path": path + connection_ids,
+                    "value": "READ"
+                }
+            ]
+        elif isinstance(connection_ids, list):
+            permissions = [
+                {
+                    "op": operation,
+                    "path": path + connection_id,
+                    "value": "READ"
+                } for connection_id in connection_ids
+            ]
+        else:
+            raise ValueError(
+                f"Invalid connection_ids type: {type(connection_ids)}")
+
+        return requests.patch(
+            f"{self.api_url}/users/{username}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=permissions,
+            verify=False,
+            timeout=20
+        )
 
     def update_user_permissions(self,
                                 username: str,
@@ -391,8 +427,11 @@ class session:
                                 admin: bool = False) -> requests.Response | str:
         """Change a user Connections"""
 
-        path = f"/userPermissions/{username}"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
+        path = f"/userPermissions/{username}"
         permissions = []
 
         permissions.append({
@@ -443,16 +482,14 @@ class session:
                         "value": "ADMINISTER"
             })
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/users/{username}/permissions",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=permissions,
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        return requests.patch(
+            f"{self.api_url}/users/{username}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=permissions,
+            verify=False,
+            timeout=20
+        )
 
     def delete_user(self,
                     username: str) -> requests.Response:
@@ -491,68 +528,74 @@ class session:
                                 operation: str = "add") -> requests.Response | str:
         """Assign to or Remove user from group"""
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/userGroups/{groupname}/memberUsers",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": "/",
-                        "value": username
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        return requests.patch(
+            f"{self.api_url}/userGroups/{groupname}/memberUsers",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=[
+                {
+                    "op": operation,
+                    "path": "/",
+                    "value": username
+                }
+            ],
+            verify=False,
+            timeout=20
+        )
 
     def update_usergroup_membergroup(self,
-                                     identifier: int,
+                                     identifier: str,
                                      groupname: str,
                                      operation: str = "add") -> requests.Response | str:
         """Assign to or Remove group from group"""
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/userGroups/{groupname}/memberUserGroup",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": "/",
-                        "value": str(identifier)
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        return requests.patch(
+            f"{self.api_url}/userGroups/{groupname}/memberUserGroup",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=[
+                {
+                    "op": operation,
+                    "path": "/",
+                    "value": identifier
+                }
+            ],
+            verify=False,
+            timeout=20
+        )
 
     def update_usergroup_parentgroup(self,
-                                     identifier: int,
+                                     identifier: str,
                                      groupname: str,
                                      operation: str = "add") -> requests.Response | str:
         """Assign to or Remove group from group"""
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/userGroups/{groupname}/userGroups",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": "/",
-                        "value": str(identifier)
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        return requests.patch(
+            f"{self.api_url}/userGroups/{groupname}/userGroups",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=[
+                {
+                    "op": operation,
+                    "path": "/",
+                    "value": identifier
+                }
+            ],
+            verify=False,
+            timeout=20
+        )
 
     def update_usergroup_permissions(self,
                                      groupname: str,
@@ -564,6 +607,10 @@ class session:
                                      cshare: bool = False,
                                      admin: bool = False) -> requests.Response | str:
         """Update permissions of user group"""
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
         permissions = []
 
@@ -615,43 +662,71 @@ class session:
                         "value": "ADMINISTER"
             })
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/userGroups/{groupname}/permissions",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=permissions,
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        return requests.patch(
+            f"{self.api_url}/userGroups/{groupname}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=permissions,
+            verify=False,
+            timeout=20
+        )
 
     def update_usergroup_connection(self,
-                                    connection_id: int,
+                                    connection_ids: str | list,
                                     groupname: str,
                                     operation: str = "add") -> requests.Response | str:
-        """Assign to or Remove connection from group"""
+        """
+        Add to or remove connection(s) from a group
 
-        if operation in ["add", "remove"]:
-            return requests.patch(
-                f"{self.api_url}/userGroups/{groupname}/permissions",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json=[
-                    {
-                        "op": operation,
-                        "path": f"/connectionPermissions/{str(connection_id)}",
-                        "value": "READ"
-                    }
-                ],
-                verify=False,
-                timeout=20
-            )
-        return "Invalid Operation, requires (add or remove)"
+        Args:
+            connection_ids: The ID(s) of the connection(s) to update permissions for.
+                Can be a string or a list of strings.
+            groupname: The name of the user group.
+            operation: The operation to perform on the permissions.
+                Defaults to "add". Must be either "add" or "remove".
+
+        Returns:
+            requests.Response
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        path = "/connectionPermissions/"
+
+        if isinstance(connection_ids, str):
+            permissions = [
+                {
+                    "op": operation,
+                    "path": path + connection_ids,
+                    "value": "READ"
+                }
+            ]
+        elif isinstance(connection_ids, list):
+            permissions = [
+                {
+                    "op": operation,
+                    "path": path + connection_id,
+                    "value": "READ"
+                } for connection_id in connection_ids
+            ]
+        else:
+            raise ValueError(
+                f"Invalid connection_ids type: {type(connection_ids)}")
+
+        return requests.patch(
+            f"{self.api_url}/userGroups/{groupname}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=permissions,
+            verify=False,
+            timeout=20
+        )
 
     def create_usergroup(self,
                          groupname: str,
-                         attributes: dict = None) -> requests.Response:
+                         attributes: dict = {}) -> requests.Response:
         """Creates a user group"""
 
         return requests.post(
@@ -670,7 +745,7 @@ class session:
 
     def update_usergroup(self,
                          groupname: str,
-                         attributes: dict = None) -> requests.Response:
+                         attributes: dict = {}) -> requests.Response:
         """Updates a user group"""
 
         return requests.put(
@@ -709,11 +784,11 @@ class session:
         ).json(), indent=2)
 
     def detail_tunnels(self,
-                       tunnel_id: int) -> object:
+                       tunnel_id: str) -> object:
         """Returns tunnels"""
 
         return json.dumps(requests.get(
-            f"{self.host}/api/session/tunnels/{str(tunnel_id)}/activeConnection/connection/sharingProfiles",
+            f"{self.host}/api/session/tunnels/{tunnel_id}/activeConnection/connection/sharingProfiles",
             verify=False,
             timeout=20,
             params=self.params
@@ -721,10 +796,7 @@ class session:
 
     def list_connections(self,
                          active: bool = False) -> object:
-        """
-        NOTE: Returns connections or active connections
-        * @params active (boolean value) toggles viewing active connections
-        """
+        """Returns connections"""
 
         if active:
             host = f"{self.api_url}/activeConnections"
@@ -739,21 +811,18 @@ class session:
         ).json(), indent=2)
 
     def detail_connection(self,
-                          identifier: int,
+                          identifier: str,
                           option: str = None) -> object:
-        """
-        NOTE: Returns connection details and parameters
-        * @params option (None, params, history, sharing)
-        """
+        """ Returns connection details and parameters """
 
         if not option:
-            host = f"{self.api_url}/connections/{str(identifier)}"
+            host = f"{self.api_url}/connections/{identifier}"
         elif option == "params":
-            host = f"{self.api_url}/connections/{str(identifier)}/parameters"
+            host = f"{self.api_url}/connections/{identifier}/parameters"
         elif option == "history":
-            host = f"{self.api_url}/connections/{str(identifier)}/history"
+            host = f"{self.api_url}/connections/{identifier}/history"
         elif option == "sharing":
-            host = f"{self.api_url}/connections/{str(identifier)}/sharingProfiles"
+            host = f"{self.api_url}/connections/{identifier}/sharingProfiles"
         else:
             return "Invalid option, requires no entry or (params, history, or sharing)"
 
@@ -783,21 +852,31 @@ class session:
         )
 
     def manage_connection(self,
-                          request: str,
                           protocol: str,
                           name: str,
-                          parent_identifier: int,
-                          identifier: int = None,
-                          parameters: dict = None,
-                          attributes: dict = None) -> requests.Response | str:
+                          parent_identifier: str,
+                          identifier: str = None,
+                          parameters: dict = {},
+                          attributes: dict = {}) -> requests.Response | str:
         """
-        NOTE Creates an SSH connection
-        * @param request = post (create) or put (update)
-        * @param protocol = ssh, rdp, vnc, telnet, kubernetes
-        * @param parent_identifier is required if placing in a specific connection group
-        * @param parameters = {"hostname": "", "port": "", "username": "", "password": ""}
-        * @param attributes = {"max-connections": "", "max-connections-per-user": "" }
+        Creates, updates, or deletes a connection
+
+        Args: 
+            protocol: vnc, rdp, or sftp
+            name: name of connection
+            parent_identifier: identifier of parent connection
+            identifier: identifier of connection. If None it creates a new connection
+            parameters: dictionary of parameters. Defaults to empty dictionary
+            attributes: dictionary of attributes. Defaults to empty dictionary
+
+        Returns:
+            requests.Response
         """
+
+        if protocol not in ["vnc", "ssh", "rdp", "sftp"]:
+            raise ValueError(
+                f"Invalid protocol '{protocol}'. Use 'vnc', 'ssh', 'rdp', 'telnet', or 'kubernetes'"
+            )
 
         if protocol == "vnc":
             parameters = {
@@ -1048,30 +1127,15 @@ class session:
             "guacd-hostname": attributes.get("guacd-hostname", ""),
         }
 
-        if request == "post":
-            return requests.post(
-                f"{self.api_url}/connections",
-                headers={"Content-Type": "application/json"},
-                params=self.params,
-                json={
-                    "parentIdentifier": str(parent_identifier),
-                    "name": name,
-                    "protocol": protocol,
-                    "parameters": parameters,
-                    "attributes": attributes,
-                },
-                verify=False,
-                timeout=20
-            )
-        if request == "put":
+        if identifier:
             return requests.put(
                 f"{self.api_url}/connections",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json={
-                    "parentIdentifier": str(parent_identifier),
+                    "parentIdentifier": parent_identifier,
                     "name": name,
-                    "identifier": str(identifier),
+                    "identifier": identifier,
                     "activeConnections": 0,
                     "protocol": protocol,
                     "parameters": parameters,
@@ -1080,14 +1144,27 @@ class session:
                 verify=False,
                 timeout=20
             )
-        return "Invalid request option, requires (post or put)"
+        return requests.post(
+            f"{self.api_url}/connections",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json={
+                "parentIdentifier": parent_identifier,
+                "name": name,
+                "protocol": protocol,
+                "parameters": parameters,
+                "attributes": attributes,
+            },
+            verify=False,
+            timeout=20
+        )
 
     def delete_connection(self,
-                          identifier: int) -> requests.Response:
+                          identifier: str) -> requests.Response:
         """Deletes a connection"""
 
         return requests.delete(
-            f"{self.api_url}/connections/{str(identifier)}",
+            f"{self.api_url}/connections/{identifier}",
             params=self.params,
             verify=False,
             timeout=20
@@ -1114,19 +1191,20 @@ class session:
         ).json(), indent=2)
 
     def details_sharing_profile(self,
-                                sharing_id: int,
-                                option: str) -> object:
+                                sharing_id: str,
+                                option: str = '') -> object:
         """Returns sharing profiles"""
 
-        if not option:
-            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
-        elif option == "params":
-            host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}/parameters"
+        host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
+
+        if option == "parameters":
+            host = host + "/parameters"
 
         return json.dumps(requests.get(
             host,
             verify=False,
             params=self.params,
+            timeout=20
         ).json(), indent=2)
 
     def details_connection_group_connections(self,
@@ -1143,8 +1221,8 @@ class session:
     def create_connection_group(self,
                                 group_name: str,
                                 group_type: str,
-                                parent_identifier: int = None,
-                                attributes: dict = None) -> requests.Response:
+                                parent_identifier: str = None,
+                                attributes: dict = {}) -> requests.Response:
         """Creates a connection group"""
 
         return requests.post(
@@ -1152,7 +1230,7 @@ class session:
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
-                "parentIdentifier": str(parent_identifier),
+                "parentIdentifier": parent_identifier,
                 "name": group_name,
                 "type": group_type,
                 "attributes": {
@@ -1169,19 +1247,16 @@ class session:
                                 identifier: str,
                                 group_name: str,
                                 group_type: str,
-                                parent_identifier: int = None,
-                                attributes: dict = None) -> requests.Response:
-        """
-        Updates a connection group
-        TODO: IF parent_identifier IS NOT ROOT THEN int IS REQUIRED
-        """
+                                parent_identifier: str = None,
+                                attributes: dict = {}) -> requests.Response:
+        """Updates a connection group"""
 
         return requests.put(
             f"{self.api_url}/connectionGroups/{identifier}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
-                "parentIdentifier": str(parent_identifier),
+                "parentIdentifier": parent_identifier,
                 "identifier": identifier,
                 "name": group_name,
                 "type": group_type,
@@ -1216,21 +1291,10 @@ class session:
             params=self.params
         ).json(), indent=2)
 
-    def details_sharing_profile(self,
-                                sharing_id: int) -> object:
-        """Returns sharing profiles"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/sharingProfiles/{str(sharing_id)}",
-            verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
-
     def create_sharing_profile(self,
                                primaryConnectionIdentifier: str,
                                name: str,
-                               parameters: dict = None) -> requests.Response:
+                               parameters: dict = {}) -> requests.Response:
         """Creates connection sharing profile"""
 
         return requests.post(
@@ -1253,7 +1317,7 @@ class session:
                                primaryConnectionIdentifier: str,
                                name: str,
                                identifier: str,
-                               parameters: dict = None) -> requests.Response:
+                               parameters: dict = {}) -> requests.Response:
         """Updates connection sharing profile"""
 
         return requests.post(
