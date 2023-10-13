@@ -1129,7 +1129,7 @@ class session:
 
         if identifier:
             return requests.put(
-                f"{self.api_url}/connections",
+                f"{self.api_url}/connections/{identifier}",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json={
