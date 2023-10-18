@@ -1,18 +1,31 @@
-import socket
+"""
+Guacamole API Wrapper
+"""
+from socket import setdefaulttimeout
+import json
 import requests
 import urllib3
-import json
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-socket.setdefaulttimeout(0.5)
+setdefaulttimeout(0.5)
 
 
 class session:
     """
     Guacamole Session Class. Used to interface with the Guacamole API.
 
-    Example usage for getting the current Guacamole users:
-    gconn = guacamole.session('https://guacamole.org',
+    Args:
+        host (str): The hostname of the Guacamole server.
+        data_source (str): The name of the data source.
+        username (str): The username of the Guacamole user.
+        password (str): The password of the Guacamole user.
+
+    Returns:
+        str: The response from the API request.
+
+    Example: 
+        For getting the current Guacamole users:
+    gconn = guacamole.session('https://my.guacamole.org',
                               'mysql',
                               guac_user,
                               guac_pass)
@@ -28,233 +41,498 @@ class session:
         self.username = username
         self.password = password
         self.data_source = data_source
-        self.api_url = f"{self.host}/api/session/data/{self.data_source}"
+        self.session_url = f"{self.host}/api/session/data/{self.data_source}"
+        self.tunnels_url = f"{self.host}/api/session/tunnels"
         self.token = self.generate_token()
         self.params = {"token": self.token}
 
-    def generate_token(self) -> object:
-        """Returns a token"""
+    def generate_token(self) -> str:
+        """
+        Generates a token by sending a POST request to the API endpoint
+        '/api/tokens' with the provided username and password. ))
 
-        return requests.post(
+        Args:
+            self (object): The instance of the class.
+
+        Returns:
+            str: The authentication token extracted from the JSON response.
+        """
+
+        response = requests.post(
             f"{self.host}/api/tokens",
             data={"username": self.username, "password": self.password},
             verify=False,
-            timeout=20,
+            timeout=12,
             headers={"Content-Type": "application/x-www-form-urlencoded"}
-        ).json()['authToken']
+        ).text
 
-    def delete_token(self) -> object:
-        """Deletes a token"""
+        try:
+            return json.loads(response)['authToken']
+        except json.JSONDecodeError:
+            return response
 
-        return requests.delete(
+    def delete_token(self) -> str:
+        """
+        Deletes the token associated with the API instance.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
             f"{self.host}/api/tokens/{self.token}",
             params=self.params,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
 
-    def list_schema_users(self) -> object:
-        """Returns schema for user attributes"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/userAttributes",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_schema_groups(self) -> object:
-        """Returns schema for group attributes"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/userGroupAttributes",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_schema_connections(self) -> object:
-        """Returns schema for connection attributes"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/connectionAttributes",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_schema_sharing(self) -> object:
-        """Returns schema for sharing attributes"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/sharingProfileAttributes",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_schema_connection_group(self) -> object:
-        """Returns schema for connection group attributes"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/connectionGroupAttributes",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_schema_protocols(self) -> object:
-        """Returns schema for protocols attributes"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/schema/protocols",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def list_patches(self) -> object:
+    def list_schema_users(self) -> str:
         """
-        Returns patches
-        TODO: NEED TO EXPLORE FURTHER API CAPABILITIES FROM THIS PATH
+        Retrieves a list of schema users from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
         """
 
-        return json.dumps(requests.get(
+        response = requests.get(
+            f"{self.session_url}/schema/userAttributes",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_schema_groups(self) -> str:
+        """
+        Returns the schema groups for user group attributes.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/schema/userGroupAttributes",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_schema_connections(self) -> str:
+        """
+        Retrieves the schema connection attributes from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/schema/connectionAttributes",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_schema_sharing(self) -> str:
+        """
+        Retrieves the schema for sharing profile attributes from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/schema/sharingProfileAttributes",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_schema_connection_group(self) -> str:
+        """
+        Retrieves a list of connection group attributes from the schema API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/schema/connectionGroupAttributes",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_schema_protocols(self) -> str:
+        """
+        Retrieves a list of schema protocols from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/schema/protocols",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_patches(self) -> str:
+        """
+        Retrieves a list of patches from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
             f"{self.host}/api/patches",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def list_languages(self) -> object:
-        """Returns available locales"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
+    def list_languages(self) -> str:
+        """
+        Returns a JSON object containing a list of languages supported by the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
             f"{self.host}/api/languages",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def detail_extensions(self) -> object:
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def detail_extensions(self) -> str:
         """
-        Returns details for installed extensions
-        TODO: VALIDATE FUNCTION OPERATES
+        Retrieves the details of the extensions for the current session.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
         """
 
-        return json.dumps(requests.get(
+        response = requests.get(
             f"{self.host}/api/session/ext/{self.data_source}",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def list_history_users(self) -> object:
-        """Returns user history"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/history/users",
+    def list_history_users(self) -> str:
+        """
+        Generates a list of history users.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/history/users",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def list_history_connections(self) -> object:
-        """Returns user connections"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/history/connections",
+    def list_history_connections(self) -> str:
+        """
+        Return a JSON string representation of the history connections.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/history/connections",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def list_users(self) -> object:
-        """Returns users"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users",
+    def list_users(self) -> str:
+        """
+        Generates a JSON formatted string containing a list of users.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_user(self,
-                    username: str) -> object:
-        """Returns users details"""
+                    username: str) -> str:
+        """
+        Detail a user by their username.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users/{username}",
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users/{username}",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_user_permissions(self,
-                                username: str) -> object:
-        """Returns users permissions"""
+                                username: str) -> str:
+        """
+        Retrieves the detailed permissions of a user.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users/{username}/permissions",
+        Args:
+            username (str): The username of the user for which to retrieve permissions.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users/{username}/permissions",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_user_effective_permissions(self,
-                                          username: str) -> object:
-        """Returns users efffective permissions"""
+                                          username: str) -> str:
+        """
+        Retrieves the effective permissions of a specific user.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users/{username}/effectivePermissions",
+        Args:
+            username (str): The username of the user to retrieve permissions for.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users/{username}/effectivePermissions",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_user_groups(self,
-                           username: str) -> object:
-        """Returns users groups"""
+                           username: str) -> str:
+        """
+        Retrieve the detailed information about the user groups for a given username.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users/{username}/userGroups",
+        Args:
+            username (str): The username for which to retrieve the user groups.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users/{username}/userGroups",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_user_history(self,
-                            username: str) -> object:
-        """Returns users history"""
+                            username: str) -> str:
+        """
+        Retrieves the detailed history of a user.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/users/{username}/history",
+        Args:
+            username (str): The username of the user whose history is to be retrieved.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/users/{username}/history",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def detail_self(self) -> object:
-        """Returns current user details"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/self",
+    def detail_self(self) -> str:
+        """
+        Retrieves detailed information about the current session.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/self",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def create_user(self,
                     username: str,
                     password: str,
-                    attributes: dict = {}) -> requests.Response:
-        """Creates user"""
+                    attributes: dict | None = None) -> str:
+        """
+        Create a new user.
 
-        return requests.post(
-            f"{self.api_url}/users",
+        Args:
+            username (str): The username of the user to create.
+            password (str): The password of the user to create.
+            attributes (dict, optional): A dictionary of attributes to create.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.post(
+            f"{self.session_url}/users",
             headers={"Content-Type": "application/json"},
-            verify=False,
-            timeout=20,
             params=self.params,
             json={
                 "username": username,
@@ -270,17 +548,34 @@ class session:
                     "guac-full-name": attributes.get("guac-full-name", ""),
                     "guac-organization": attributes.get("guac-organization", ""),
                     "guac-organizational-role": attributes.get("guac-organizational-role", "")
-                }
-            }
-        )
+                } if attributes else {}
+            },
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_user(self,
                     username: str,
-                    attributes: dict = {}) -> requests.Response:
-        """Updates a user"""
+                    attributes: dict | None = None) -> str:
+        """
+        Updates a user's attributes in the database.
 
-        return requests.put(
-            f"{self.api_url}/users/{username}",
+        Args:
+            username (str): The username of the user to update.
+            attributes (dict, optional): A dictionary of attributes to update.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.put(
+            f"{self.session_url}/users/{username}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -297,20 +592,34 @@ class session:
                     "disabled": attributes.get("disabled", ""),
                     "valid-until": attributes.get("valid-until", ""),
                     "valid-from": attributes.get("valid-from", "")
-                }
+                } if attributes else {}
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_user_password(self,
                              username: str,
                              oldpassword: str,
-                             newpassword: str) -> requests.Response:
-        """Updates a user Password"""
+                             newpassword: str) -> str:
+        """
+        Update the password for a user.
 
-        return requests.put(
-            f"{self.api_url}/users/{username}/password",
+        Args:
+            username (str): The username of the user.
+            oldpassword (str): The old password of the user.
+            newpassword (str): The new password of the user.
+
+        Returns:
+           str | object: The request response JSON string or object        """
+
+        response = requests.put(
+            f"{self.session_url}/users/{username}/password",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -318,39 +627,68 @@ class session:
                 "newPassword": newpassword
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_user_group(self,
                           username: str,
-                          groupname: str,
-                          operation: str = "add") -> requests.Response | str:
-        """Assign to or Remove user from group"""
+                          groupnames: str | list,
+                          operation: str = "add") -> str:
+        """
+        Update the user group for a specified username.
+
+        Args:
+            username (str): The username of the user.
+            groupname (str | list): The group or groups to update.
+            operation (str, optional): The operation to perform. Defaults to "add".
+                                        Must be either "add" or "remove".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If the operation is not valid.
+        """
 
         if operation not in ["add", "remove"]:
             raise ValueError(
                 f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
-        return requests.patch(
-            f"{self.api_url}/users/{username}/userGroups",
+        if isinstance(groupnames, str):
+            groupnames = [groupnames]
+
+        groups = [
+            {
+                "op": operation,
+                "path": "/",
+                "value": group
+            } for group in groupnames
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/users/{username}/userGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
-            json=[
-                {
-                    "op": operation,
-                    "path": "/",
-                    "value": groupname
-                }
-            ],
+            json=groups,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_connection_permissions(self,
                                       username: str,
                                       connection_ids: str | list,
                                       operation: str = "add",
-                                      permission: str = "connection") -> requests.Response | str:
+                                      permission: str = "connection") -> str:
         """
         Update the permissions for a given user's connection(s) in the API.
 
@@ -365,8 +703,7 @@ class session:
                 Defaults to "connection".
 
         Returns:
-            A requests.Response object if the request is successful. 
-            A string error message if the request fails.
+           str | object: The request response JSON string or object
 
         Raises:
             ValueError: If an argument is not valid.
@@ -385,492 +722,726 @@ class session:
         elif permission == "active connection":
             path = "/activeConnectionPermissions/"
         else:
-            raise ValueError(f"Invalid permission type: {permission}")
+            raise ValueError(f"Invalid permission type '{permission}'")
 
         if isinstance(connection_ids, str):
-            permissions = [
-                {
-                    "op": operation,
-                    "path": path + connection_ids,
-                    "value": "READ"
-                }
-            ]
-        elif isinstance(connection_ids, list):
-            permissions = [
-                {
-                    "op": operation,
-                    "path": path + connection_id,
-                    "value": "READ"
-                } for connection_id in connection_ids
-            ]
-        else:
-            raise ValueError(
-                f"Invalid connection_ids type: {type(connection_ids)}")
+            connection_ids = [connection_ids]
 
-        return requests.patch(
-            f"{self.api_url}/users/{username}/permissions",
+        permissions = [
+            {
+                "op": operation,
+                "path": path + connection_id,
+                "value": "READ"
+            } for connection_id in connection_ids
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/users/{username}/permissions",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json=permissions,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_user_permissions(self,
                                 username: str,
-                                operation: str = "add",
-                                cuser: bool = False,
-                                cusergroup: bool = False,
-                                cconnect: bool = False,
-                                cconnectgroup: bool = False,
-                                cshare: bool = False,
-                                admin: bool = False) -> requests.Response | str:
-        """Change a user Connections"""
-
-        if operation not in ["add", "remove"]:
-            raise ValueError(
-                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
-
-        path = f"/userPermissions/{username}"
-        permissions = []
-
-        permissions.append({
-            "op": operation,
-            "path": path,
-            "value": "UPDATE"
-        })
-
-        if cuser:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                "value": "CREATE_USER"
-            })
-
-        if cusergroup:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_USER_GROUP"
-            })
-
-        if cconnect:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_CONNECTION"
-            })
-
-        if cconnectgroup:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_CONNECTION_GROUP"
-            })
-
-        if cshare:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_SHARING_PROFILE"
-            })
-
-        if admin:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "ADMINISTER"
-            })
-
-        return requests.patch(
-            f"{self.api_url}/users/{username}/permissions",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json=permissions,
-            verify=False,
-            timeout=20
-        )
-
-    def delete_user(self,
-                    username: str) -> requests.Response:
-        """Deletes user"""
-
-        return requests.delete(
-            f"{self.api_url}/users/{username}",
-            params=self.params,
-            verify=False,
-            timeout=20
-        )
-
-    def list_usergroups(self) -> object:
-        """Returns user groups"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/userGroups",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def detail_usergroup(self, groupname: str) -> object:
-        """Returns user groups"""
-
-        return json.dumps(requests.get(
-            f"{self.api_url}/userGroups/{groupname}",
-            params=self.params,
-            verify=False,
-            timeout=20
-        ).json(), indent=2)
-
-    def update_usergroup_member(self,
-                                username: str,
-                                groupname: str,
-                                operation: str = "add") -> requests.Response | str:
-        """Assign to or Remove user from group"""
-
-        if operation not in ["add", "remove"]:
-            raise ValueError(
-                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
-
-        return requests.patch(
-            f"{self.api_url}/userGroups/{groupname}/memberUsers",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json=[
-                {
-                    "op": operation,
-                    "path": "/",
-                    "value": username
-                }
-            ],
-            verify=False,
-            timeout=20
-        )
-
-    def update_usergroup_membergroup(self,
-                                     identifier: str,
-                                     groupname: str,
-                                     operation: str = "add") -> requests.Response | str:
-        """Assign to or Remove group from group"""
-
-        if operation not in ["add", "remove"]:
-            raise ValueError(
-                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
-
-        return requests.patch(
-            f"{self.api_url}/userGroups/{groupname}/memberUserGroup",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json=[
-                {
-                    "op": operation,
-                    "path": "/",
-                    "value": identifier
-                }
-            ],
-            verify=False,
-            timeout=20
-        )
-
-    def update_usergroup_parentgroup(self,
-                                     identifier: str,
-                                     groupname: str,
-                                     operation: str = "add") -> requests.Response | str:
-        """Assign to or Remove group from group"""
-
-        if operation not in ["add", "remove"]:
-            raise ValueError(
-                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
-
-        return requests.patch(
-            f"{self.api_url}/userGroups/{groupname}/userGroups",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json=[
-                {
-                    "op": operation,
-                    "path": "/",
-                    "value": identifier
-                }
-            ],
-            verify=False,
-            timeout=20
-        )
-
-    def update_usergroup_permissions(self,
-                                     groupname: str,
-                                     operation: str = "add",
-                                     cuser: bool = False,
-                                     cusergroup: bool = False,
-                                     cconnect: bool = False,
-                                     cconnectgroup: bool = False,
-                                     cshare: bool = False,
-                                     admin: bool = False) -> requests.Response | str:
-        """Update permissions of user group"""
-
-        if operation not in ["add", "remove"]:
-            raise ValueError(
-                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
-
-        permissions = []
-
-        permissions.append({
-            "op": operation,
-            "path": f"/connectionPermissions/{groupname}",
-            "value": "READ"
-        })
-
-        if cuser:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                "value": "CREATE_USER"
-            })
-
-        if cusergroup:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_USER_GROUP"
-            })
-
-        if cconnect:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_CONNECTION"
-            })
-
-        if cconnectgroup:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_CONNECTION_GROUP"
-            })
-
-        if cshare:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "CREATE_SHARING_PROFILE"
-            })
-
-        if admin:
-            permissions.append({
-                "op": operation,
-                "path": "/systemPermissions",
-                        "value": "ADMINISTER"
-            })
-
-        return requests.patch(
-            f"{self.api_url}/userGroups/{groupname}/permissions",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json=permissions,
-            verify=False,
-            timeout=20
-        )
-
-    def update_usergroup_connection(self,
-                                    connection_ids: str | list,
-                                    groupname: str,
-                                    operation: str = "add") -> requests.Response | str:
+                                permissions: list | str,
+                                operation: str = "add") -> str:
         """
-        Add to or remove connection(s) from a group
+        Update a user's permissions
 
         Args:
-            connection_ids: The ID(s) of the connection(s) to update permissions for.
-                Can be a string or a list of strings.
-            groupname: The name of the user group.
+            username: The username of the user.
+            permissions: The permissions to update.
+                Can be a string or a list of strings. Valid values are:
+                - "ADMINISTER"
+                - "CREATE_USER"
+                - "CREATE_USER_GROUP"
+                - "CREATE_CONNECTION",
+                - "CREATE_CONNECTION_GROUP"
+                - "CREATE_SHARING_PROFILE"
+                - "UPDATE"
             operation: The operation to perform on the permissions.
                 Defaults to "add". Must be either "add" or "remove".
 
         Returns:
-            requests.Response
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If an argument is not valid.
         """
 
         if operation not in ["add", "remove"]:
             raise ValueError(
                 f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
-        path = "/connectionPermissions/"
+        if isinstance(permissions, str):
+            permissions = [permissions]
 
-        if isinstance(connection_ids, str):
-            permissions = [
+        if "UPDATE" in permissions:
+            perms = [
                 {
                     "op": operation,
-                    "path": path + connection_ids,
-                    "value": "READ"
+                    "path": f"/userPermissions/{username}",
+                    "value": "UPDATE"
                 }
             ]
-        elif isinstance(connection_ids, list):
-            permissions = [
-                {
-                    "op": operation,
-                    "path": path + connection_id,
-                    "value": "READ"
-                } for connection_id in connection_ids
-            ]
+            permissions.remove("UPDATE")
         else:
-            raise ValueError(
-                f"Invalid connection_ids type: {type(connection_ids)}")
+            perms = []
 
-        return requests.patch(
-            f"{self.api_url}/userGroups/{groupname}/permissions",
+        valid_perms = [
+            "ADMINISTER",
+            "CREATE_USER",
+            "CREATE_USER_GROUP",
+            "CREATE_CONNECTION",
+            "CREATE_CONNECTION_GROUP",
+            "CREATE_SHARING_PROFILE",
+        ]
+
+        for perm in permissions:
+            if perm not in valid_perms:
+                raise ValueError(
+                    f"Invalid permission '{perm}'. Use {valid_perms}")
+
+            perms.append({
+                "op": operation,
+                "path": "/systemPermissions",
+                "value": perm
+            })
+
+        response = requests.patch(
+            f"{self.session_url}/users/{username}/permissions",
             headers={"Content-Type": "application/json"},
             params=self.params,
-            json=permissions,
+            json=perms,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def delete_user(self,
+                    username: str) -> str:
+        """
+        Deletes a user with the specified username.
+
+        Args:
+            self (object): The current instance of the class.
+            username (str): The username of the user to be deleted.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
+            f"{self.session_url}/users/{username}",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_usergroups(self) -> str:
+        """
+        Returns a JSON string containing the user groups.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/userGroups",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def detail_usergroup(self,
+                         groupname: str) -> str:
+        """
+        Retrieves the details of a user group from the API.
+
+        Args:
+            groupname (str): The name of the user group to retrieve.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/userGroups/{groupname}",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def update_usergroup_member(self,
+                                usernames: str,
+                                groupname: str,
+                                operation: str = "add") -> str:
+        """
+        Update the membership of a user in a user group.
+
+        Args:
+            usernames (str): The username of the user.
+            groupname (str): The name of the user group.
+            operation (str, optional): The operation to perform. Defaults to "add".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If the operation is not valid.
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if isinstance(usernames, str):
+            usernames = [usernames]
+
+        users = [
+            {
+                "op": operation,
+                "path": "/",
+                "value": user
+            } for user in usernames
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/userGroups/{groupname}/memberUsers",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=users,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def update_usergroup_membergroup(self,
+                                     identifiers: str,
+                                     groupname: str,
+                                     operation: str = "add") -> str:
+        """
+        Updates the member group of a user group.
+
+        Args:
+            identifier (str): The identifier of the user.
+            groupname (str): The name of the user group.
+            operation (str, optional): The operation to perform. Defaults to "add".
+                Possible values are "add" and "remove".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If the operation is not "add" or "remove".
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if isinstance(identifiers, str):
+            identifiers = [identifiers]
+
+        member_groups = [
+            {
+                "op": operation,
+                "path": "/",
+                "value": identifier
+            } for identifier in identifiers
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/userGroups/{groupname}/memberUserGroup",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=member_groups,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def update_usergroup_parentgroup(self,
+                                     identifiers: str,
+                                     groupname: str,
+                                     operation: str = "add") -> str:
+        """
+        Update the parent group of a user group.
+
+        Args:
+            identifier (str): The identifier of the user group.
+            groupname (str): The name of the user group.
+            operation (str, optional): The operation to perform. Defaults to "add".
+                Possible values are "add" and "remove".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If the operation is not "add" or "remove".
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if isinstance(identifiers, str):
+            identifiers = [identifiers]
+
+        parent_groups = [
+            {
+                "op": operation,
+                "path": "/",
+                "value": identifier
+            } for identifier in identifiers
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/userGroups/{groupname}/userGroups",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=parent_groups,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def update_usergroup_permissions(self,
+                                     groupname: str,
+                                     permissions: str | list,
+                                     operation: str = "add") -> str:
+        """
+        Updates the permissions of a user group.
+
+        Args:
+            groupname (str): The name of the user group.
+            permissions (str | list): The permissions to update.
+            Can be a string or a list of strings.
+            operation (str, optional): The operation to perform.
+            Defaults to "add".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If an invalid operation or permission is provided.
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if isinstance(permissions, str):
+            permissions = [permissions]
+
+        valid_perms = [
+            "ADMINISTER",
+            "CREATE_USER",
+            "CREATE_USER_GROUP",
+            "CREATE_CONNECTION",
+            "CREATE_CONNECTION_GROUP",
+            "CREATE_SHARING_PROFILE"
+        ]
+
+        perms = []
+        for perm in permissions:
+            if perm not in valid_perms:
+                raise ValueError(
+                    f"Invalid permission '{perm}'. Use {valid_perms}"
+                )
+
+            perms.append({
+                "op": operation,
+                "path": "/systemPermissions",
+                "value": perm
+            })
+
+        response = requests.patch(
+            f"{self.session_url}/userGroups/{groupname}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=perms,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def update_usergroup_connection(self,
+                                    groupname: str,
+                                    connection_ids: str | list,
+                                    connection_type: str = "connection",
+                                    operation: str = "add") -> str:
+        """
+        Add to or remove connection(s) from a group
+
+        Args:
+            groupname: The name of the user group.
+            connection_ids: The ID(s) of the connection(s) to update permissions for.
+                Can be a string or a list of strings.
+            connection_type: The type of connection(s) to update permissions for.
+                Defaults to "connection".
+            operation: The operation to perform on the permissions.
+                Defaults to "add". Must be either "add" or "remove".
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        if operation not in ["add", "remove"]:
+            raise ValueError(
+                f"Invalid operation '{operation}'. Use 'add' or 'remove'")
+
+        if connection_type == "connection":
+            path = "/connectionPermissions"
+        elif connection_type == "group":
+            path = "/connectionGroupPermissions"
+        elif connection_type == "sharing profile":
+            path = "/sharingProfilePermissions"
+        elif connection_type == "active connection":
+            path = "/activeConnectionPermissions"
+        else:
+            raise ValueError(f"Invalid connection type '{connection_type}'")
+
+        if isinstance(connection_ids, str):
+            connection_ids = [connection_ids]
+
+        conns = [
+            {
+                "op": operation,
+                "path": f"{path}/{connection_id}",
+                "value": "READ"
+            } for connection_id in connection_ids
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/userGroups/{groupname}/permissions",
+            headers={"Content-Type": "application/json"},
+            params=self.params,
+            json=conns,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def create_usergroup(self,
                          groupname: str,
-                         attributes: dict = {}) -> requests.Response:
-        """Creates a user group"""
+                         attributes: dict | None = None) -> str:
+        """
+        Create a user group with the given group name and attributes.
 
-        return requests.post(
-            f"{self.api_url}/userGroups",
+        Args:
+            groupname: The name of the user group to create.
+            attributes: The attributes of the user group.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.post(
+            f"{self.session_url}/userGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
                 "identifier": groupname,
                 "attributes": {
                     "disabled": attributes.get("disabled", "")
-                }
+                } if attributes else {}
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_usergroup(self,
                          groupname: str,
-                         attributes: dict = {}) -> requests.Response:
-        """Updates a user group"""
+                         attributes: dict | None = None) -> str:
+        """
+        Update a user group.
 
-        return requests.put(
-            f"{self.api_url}/userGroups/{groupname}",
+        Args:
+            groupname: The name of the user group to be updated.
+            attributes: The attributes to be updated for the user group.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.put(
+            f"{self.session_url}/userGroups/{groupname}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
                 "identifier": groupname,
                 "attributes": {
                     "disabled": attributes.get("disabled", "")
-                }
+                } if attributes else {}
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def delete_usergroup(self,
-                         user_group: str) -> requests.Response:
-        """Deletes a user group"""
+                         user_group: str) -> str:
+        """
+        Deletes a user group.
 
-        return requests.delete(
-            f"{self.api_url}/userGroups/{user_group}",
+        Args:
+            user_group (str): The name of the user group to be deleted.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
+            f"{self.session_url}/userGroups/{user_group}",
             params=self.params,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
 
-    def list_tunnels(self) -> object:
-        """Returns tunnels"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.host}/api/session/tunnels",
+    def list_tunnels(self) -> str:
+        """
+        Return a JSON string representation of the Guacamole tunnels.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            self.tunnels_url,
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_tunnels(self,
-                       tunnel_id: str) -> object:
-        """Returns tunnels"""
+                       tunnel_id: str) -> str:
+        """
+        Retrieves the details of a specific tunnel.
 
-        return json.dumps(requests.get(
-            f"{self.host}/api/session/tunnels/{tunnel_id}/activeConnection/connection/sharingProfiles",
+        Args:
+            tunnel_id (str): The ID of the tunnel.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.tunnels_url}/{tunnel_id}/activeConnection/connection/sharingProfiles",
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def list_connections(self,
-                         active: bool = False) -> object:
-        """Returns connections"""
+                         active: bool = False) -> str:
+        """
+        Lists the connections.
+
+        Args:
+            active (bool, optional): Whether to list active connections. Defaults to False.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
 
         if active:
-            host = f"{self.api_url}/activeConnections"
+            host = f"{self.session_url}/activeConnections"
         else:
-            host = f"{self.api_url}/connections"
+            host = f"{self.session_url}/connections"
 
-        return json.dumps(requests.get(
+        response = requests.get(
             host,
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def detail_connection(self,
                           identifier: str,
-                          option: str = None) -> object:
-        """ Returns connection details and parameters """
+                          option: str = None) -> str:
+        """
+        Detail a connection based on the given identifier and option.
+
+        Args:
+            identifier (str): The identifier of the connection.
+            option (str, optional): The option to detail the connection.
+            Defaults to None. Options are: "parameters", "history", and "sharing profiles".
+
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If an invalid option is provided.
+        """
 
         if not option:
-            host = f"{self.api_url}/connections/{identifier}"
-        elif option == "params":
-            host = f"{self.api_url}/connections/{identifier}/parameters"
+            host = f"{self.session_url}/connections/{identifier}"
+        elif option == "parameters":
+            host = f"{self.session_url}/connections/{identifier}/parameters"
         elif option == "history":
-            host = f"{self.api_url}/connections/{identifier}/history"
-        elif option == "sharing":
-            host = f"{self.api_url}/connections/{identifier}/sharingProfiles"
+            host = f"{self.session_url}/connections/{identifier}/history"
+        elif option == "sharing profiles":
+            host = f"{self.session_url}/connections/{identifier}/sharingProfiles"
         else:
-            return "Invalid option, requires no entry or (params, history, or sharing)"
+            raise ValueError(f"Invalid option '{option}'")
 
-        return json.dumps(requests.get(
+        response = requests.get(
             host,
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def kill_active_connection(self,
-                               connection_id: str) -> requests.Response:
-        """Kill an active connection to a hosted system"""
+                               connection_ids: str | list) -> str:
+        """
+        Kills the active connection(s) specified by the given connection ID(s).
 
-        return requests.patch(
-            f"{self.api_url}/activeConnections",
+        Args:
+            connection_ids: The ID(s) of the connection(s) to kill.
+                Can be a string or a list of strings.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        if isinstance(connection_ids, str):
+            connection_ids = [connection_ids]
+
+        kill_ids = [
+            {
+                "op": "remove",
+                "path": f"/{connection_id}"
+            } for connection_id in connection_ids
+        ]
+
+        response = requests.patch(
+            f"{self.session_url}/activeConnections",
             headers={"Content-Type": "application/json"},
             params=self.params,
-            json=[
-                {
-                    "op": "remove",
-                    "path": f"/{connection_id}"
-                }
-            ],
+            json=kill_ids,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def manage_connection(self,
                           protocol: str,
                           name: str,
                           parent_identifier: str,
                           identifier: str = None,
-                          parameters: dict = {},
-                          attributes: dict = {}) -> requests.Response | str:
+                          parameters: dict | None = None,
+                          attributes: dict | None = None) -> str:
         """
         Creates, updates, or deletes a connection
 
         Args: 
-            protocol: vnc, rdp, or sftp
-            name: name of connection
-            parent_identifier: identifier of parent connection
-            identifier: identifier of connection. If None it creates a new connection
-            parameters: dictionary of parameters. Defaults to empty dictionary
-            attributes: dictionary of attributes. Defaults to empty dictionary
+            protocol (str): vnc, rdp, or sftp
+            name (str): name of connection
+            parent_identifier (str): identifier of parent connection
+            identifier (str | optional): identifier of connection.
+                Defaults to None. If None it creates a new connection
+            parameters (dict | optional): dictionary of parameters.
+                Defaults to None
+            attributes (dict | optional): dictionary of attributes.
+                Defaults to None
 
         Returns:
-            requests.Response
+           str | object: The request response JSON string or object
         """
 
         if protocol not in ["vnc", "ssh", "rdp", "sftp"]:
@@ -912,7 +1483,7 @@ class session:
                 "password": parameters.get("password", ""),
                 "username": parameters.get("username", ""),
                 "hostname": parameters.get("hostname", ""),
-            }
+            } if parameters else {}
 
         if protocol == "ssh":
             parameters = {
@@ -955,7 +1526,7 @@ class session:
                 "recording-path": parameters.get("recording-path", ""),
                 "recording-name": parameters.get("recording-name", ""),
                 "sftp-root-directory": parameters.get("sftp-root-directory", ""),
-            }
+            } if parameters else {}
 
         if protocol == "rdp":
             parameters = {
@@ -1036,7 +1607,7 @@ class session:
                 "sftp-passphrase": parameters.get("sftp-passphrase", ""),
                 "sftp-root-directory": parameters.get("sftp-root-directory", ""),
                 "sftp-directory": parameters.get("sftp-directory", ""),
-            }
+            } if parameters else {}
 
         if protocol == "telnet":
             parameters = {
@@ -1075,7 +1646,7 @@ class session:
                 "typescript-name": parameters.get("typescript-name", ""),
                 "recording-path": parameters.get("recording-path", ""),
                 "recording-name": parameters.get("recording-name", ""),
-            }
+            } if parameters else {}
 
         if protocol == "kubernetes":
             parameters = {
@@ -1115,7 +1686,7 @@ class session:
                 "typescript-name": parameters.get("typescript-name", ""),
                 "recording-path": parameters.get("recording-path", ""),
                 "recording-name": parameters.get("recording-name", ""),
-            }
+            } if parameters else {}
 
         attributes = {
             "max-connections": attributes.get("max-connections", ""),
@@ -1125,11 +1696,11 @@ class session:
             "guacd-port": attributes.get("guacd-port", ""),
             "guacd-encryption": attributes.get("guacd-encryption", ""),
             "guacd-hostname": attributes.get("guacd-hostname", ""),
-        }
+        } if attributes else {}
 
         if identifier:
-            return requests.put(
-                f"{self.api_url}/connections/{identifier}",
+            response = requests.put(
+                f"{self.session_url}/connections/{identifier}",
                 headers={"Content-Type": "application/json"},
                 params=self.params,
                 json={
@@ -1142,10 +1713,11 @@ class session:
                     "attributes": attributes,
                 },
                 verify=False,
-                timeout=20
+                timeout=12
             )
-        return requests.post(
-            f"{self.api_url}/connections",
+
+        response = requests.post(
+            f"{self.session_url}/connections",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -1156,77 +1728,169 @@ class session:
                 "attributes": attributes,
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def delete_connection(self,
-                          identifier: str) -> requests.Response:
-        """Deletes a connection"""
+                          identifier: str) -> str:
+        """
+        Delete a connection identified by the given identifier.
 
-        return requests.delete(
-            f"{self.api_url}/connections/{identifier}",
+        Args:
+            identifier (str): The identifier of the connection to delete.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
+            f"{self.session_url}/connections/{identifier}",
             params=self.params,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
 
-    def list_connection_groups(self) -> object:
-        """Returns all connection groups"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/connectionGroups",
+    def list_connection_groups(self) -> str:
+        """
+        Returns a JSON string containing the connection groups.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/connectionGroups",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
 
-    def list_connection_group_connections(self) -> object:
-        """Returns all connection groups connections"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/connectionGroups/ROOT/tree",
+    def list_connection_group_connections(self) -> str:
+        """
+        Retrieves the connections in the connection group with the specified ID.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/connectionGroups/ROOT/tree",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def details_sharing_profile(self,
                                 sharing_id: str,
-                                option: str = '') -> object:
-        """Returns sharing profiles"""
+                                option: str = '') -> str:
+        """
+        Retrieves the details of a sharing profile.
 
-        host = f"{self.host}/api/session/data/{self.data_source}/sharingProfiles/{str(sharing_id)}"
+        Args:
+            sharing_id (str): The identifier of the sharing profile.
+            option (str | optional): An additional option for the request.
+                Defaults to ''. Can be 'parameters'
 
-        if option == "parameters":
+        Returns:
+           str | object: The request response JSON string or object
+
+        Raises:
+            ValueError: If an invalid option is provided.
+        """
+
+        if option not in ['', 'parameters']:
+            raise ValueError(
+                f"Invalid option '{option}'. Use '' or 'parameters'.")
+
+        host = f"{self.session_url}/sharingProfiles/{sharing_id}"
+
+        if option == 'parameters':
             host = host + "/parameters"
 
-        return json.dumps(requests.get(
+        response = requests.get(
             host,
             verify=False,
             params=self.params,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def details_connection_group_connections(self,
-                                             identifier: str) -> object:
-        """Returns specific connection group connections"""
+                                             identifier: str) -> str:
+        """
+        Retrieve the details of a connection group's connections.
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/connectionGroups/{identifier}/tree",
+        Args:
+            identifier (str): The identifier of the connection group.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/connectionGroups/{identifier}/tree",
             params=self.params,
             verify=False,
-            timeout=20
-        ).json(), indent=2)
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def create_connection_group(self,
                                 group_name: str,
                                 group_type: str,
                                 parent_identifier: str = None,
-                                attributes: dict = {}) -> requests.Response:
-        """Creates a connection group"""
+                                attributes: dict | None = None) -> str:
+        """
+        Creates a connection group with the given parameters.
 
-        return requests.post(
-            f"{self.api_url}/connectionGroups",
+        Args:
+            group_name (str): The name of the connection group.
+            group_type (str): The type of the connection group.
+            parent_identifier (str, optional): The parent connection group identifier.
+            Defaults to None.
+            attributes (dict, optional): Additional attributes for the connection group.
+            Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.post(
+            f"{self.session_url}/connectionGroups",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -1237,22 +1901,41 @@ class session:
                     "max-connections": attributes.get("max-connections", ""),
                     "max-connections-per-user": attributes.get("max-connections-per-user", ""),
                     "enable-session-affinity": attributes.get("enable-session-affinity", "")
-                }
+                } if attributes else {}
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_connection_group(self,
                                 identifier: str,
                                 group_name: str,
                                 group_type: str,
                                 parent_identifier: str = None,
-                                attributes: dict = {}) -> requests.Response:
-        """Updates a connection group"""
+                                attributes: dict | None = None) -> str:
+        """
+        Update a connection group.
 
-        return requests.put(
-            f"{self.api_url}/connectionGroups/{identifier}",
+        Args:
+            identifier (str): The identifier of the connection group.
+            group_name (str): The name of the connection group.
+            group_type (str): The type of the connection group.
+            parent_identifier (str, optional): The parent connection group identifier.
+            Defaults to None.
+            attributes (dict, optional): Additional attributes for the connection group.
+            Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.put(
+            f"{self.session_url}/connectionGroups/{identifier}",
             headers={"Content-Type": "application/json"},
             params=self.params,
             json={
@@ -1264,86 +1947,164 @@ class session:
                     "max-connections": attributes.get("max-connections", ""),
                     "max-connections-per-user": attributes.get("max-connections-per-user", ""),
                     "enable-session-affinity": attributes.get("enable-session-affinity", "")
-                }
+                } if attributes else {}
             },
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def delete_connection_group(self,
-                                connection_group: str) -> requests.Response:
-        """Deletes a connection group"""
+                                connection_group: str) -> str:
+        """
+        Deletes a connection group from the server.
 
-        return requests.delete(
-            f"{self.api_url}/connectionGroups/{connection_group}",
+        Args:
+            connection_group (str): The name of the connection group to delete.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
+            f"{self.session_url}/connectionGroups/{connection_group}",
             params=self.params,
             verify=False,
-            timeout=20
-        )
+            timeout=12
+        ).text
 
-    def list_sharing_profile(self) -> object:
-        """Returns sharing profiles"""
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
-        return json.dumps(requests.get(
-            f"{self.api_url}/sharingProfiles",
+    def list_sharing_profile(self) -> str:
+        """
+        Retrieves the sharing profile list from the API.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/sharingProfiles",
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        ).json(), indent=2)
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def create_sharing_profile(self,
-                               primaryConnectionIdentifier: str,
+                               primary_identifier: str,
                                name: str,
-                               parameters: dict = {}) -> requests.Response:
-        """Creates connection sharing profile"""
+                               parameters: dict | None = None) -> str:
+        """
+        Creates a sharing profile with the specified primary identifier, name, and parameters.
 
-        return requests.post(
-            f"{self.api_url}/sharingProfiles",
+        Args:
+            primary_identifier (str): The primary identifier of the sharing profile.
+            name (str): The name of the sharing profile.
+            parameters (dict, optional): Additional parameters for the sharing profile.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.post(
+            f"{self.session_url}/sharingProfiles",
             headers={"Content-Type": "application/json"},
-            verify=False,
-            timeout=20,
             params=self.params,
             json={
-                "primaryConnectionIdentifier": primaryConnectionIdentifier,
+                "primaryConnectionIdentifier": primary_identifier,
                 "name": name,
                 "parameters": {
                     "read-only": parameters.get("read-only", "")
-                },
+                } if parameters else {},
                 "attributes": {}
-            }
-        )
+            },
+            verify=False,
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def update_sharing_profile(self,
-                               primaryConnectionIdentifier: str,
+                               primary_identifier: str,
                                name: str,
                                identifier: str,
-                               parameters: dict = {}) -> requests.Response:
-        """Updates connection sharing profile"""
+                               parameters: dict | None = None) -> str:
+        """
+        Updates the sharing profile with the specified primary identifier,
+            name, identifier, and parameters.
 
-        return requests.post(
-            f"{self.api_url}/sharingProfiles/{identifier}",
+        Args:
+            primary_identifier (str): The primary identifier of the sharing profile.
+            name (str): The name of the sharing profile.
+            identifier (str): The identifier of the sharing profile.
+            parameters (dict, optional): The parameters of the sharing profile.
+                Defaults to None.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.post(
+            f"{self.session_url}/sharingProfiles/{identifier}",
             headers={"Content-Type": "application/json"},
-            verify=False,
-            timeout=20,
             params=self.params,
             json={
-                "primaryConnectionIdentifier": primaryConnectionIdentifier,
+                "primaryConnectionIdentifier": primary_identifier,
                 "name": name,
                 "parameters": {
                     "read-only": parameters.get("read-only", "")
-                },
+                } if parameters else {},
                 "attributes": {}
-            }
-        )
+            },
+            verify=False,
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
 
     def delete_sharing_profile(self,
-                               identifier: str) -> requests.Response:
-        """Deletes connection sharing profile"""
+                               identifier: str) -> str:
+        """
+        Deletes a sharing profile with the specified identifier.
 
-        return requests.delete(
-            f"{self.api_url}/sharingProfiles/{identifier}",
+        Args:
+            identifier (str): The identifier of the sharing profile to be deleted.
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.delete(
+            f"{self.session_url}/sharingProfiles/{identifier}",
             headers={"Content-Type": "application/json"},
+            params=self.params,
             verify=False,
-            timeout=20,
-            params=self.params
-        )
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
