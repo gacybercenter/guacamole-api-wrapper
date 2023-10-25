@@ -1444,7 +1444,7 @@ class session:
            str | object: The request response JSON string or object
         """
 
-        if protocol not in ["vnc", "ssh", "rdp", "sftp"]:
+        if protocol not in ["vnc", "ssh", "rdp", "sftp", "telnet", "kubernetes"]:
             raise ValueError(
                 f"Invalid protocol '{protocol}'. Use 'vnc', 'ssh', 'rdp', 'telnet', or 'kubernetes'"
             )
