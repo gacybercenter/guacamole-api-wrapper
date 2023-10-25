@@ -49,7 +49,7 @@ class session:
     def generate_token(self) -> str:
         """
         Generates a token by sending a POST request to the API endpoint
-        '/api/tokens' with the provided username and password. ))
+        '/api/tokens' with the provided username and password.
 
         Args:
             self (object): The instance of the class.
@@ -2090,7 +2090,7 @@ class session:
         Deletes a sharing profile with the specified identifier.
 
         Args:
-            identifier (str): The identifier of the sharing profile to be deleted.
+            identifier (str): The identifier of the sharing profile.
 
         Returns:
            str | object: The request response JSON string or object
