@@ -46,16 +46,16 @@ class session:
         self.token = self.generate_token()
         self.params = {"token": self.token}
 
-    def generate_token(self) -> str:
+    def generate_token(self) -> str | object:
         """
         Generates a token by sending a POST request to the API endpoint
         '/api/tokens' with the provided username and password.
 
         Args:
-            self (object): The instance of the class.
+            None
 
         Returns:
-            str: The authentication token extracted from the JSON response.
+            str | object: The authentication token extracted from the JSON response.
         """
 
         response = requests.post(
@@ -71,7 +71,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def delete_token(self) -> str:
+    def delete_token(self) -> str | object:
         """
         Deletes the token associated with the API instance.
 
@@ -94,7 +94,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_users(self) -> str:
+    def list_schema_users(self) -> str | object:
         """
         Retrieves a list of schema users from the API.
 
@@ -117,7 +117,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_groups(self) -> str:
+    def list_schema_groups(self) -> str | object:
         """
         Returns the schema groups for user group attributes.
 
@@ -140,7 +140,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_connections(self) -> str:
+    def list_schema_connections(self) -> str | object:
         """
         Retrieves the schema connection attributes from the API.
 
@@ -163,7 +163,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_sharing(self) -> str:
+    def list_schema_sharing_profiles(self) -> str | object:
         """
         Retrieves the schema for sharing profile attributes from the API.
 
@@ -186,7 +186,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_connection_group(self) -> str:
+    def list_schema_connection_groups(self) -> str | object:
         """
         Retrieves a list of connection group attributes from the schema API.
 
@@ -209,7 +209,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_schema_protocols(self) -> str:
+    def list_schema_protocols(self) -> str | object:
         """
         Retrieves a list of schema protocols from the API.
 
@@ -232,7 +232,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_patches(self) -> str:
+    def list_patches(self) -> str | object:
         """
         Retrieves a list of patches from the API.
 
@@ -255,7 +255,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_languages(self) -> str:
+    def list_languages(self) -> str | object:
         """
         Returns a JSON object containing a list of languages supported by the API.
 
@@ -278,7 +278,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def detail_extensions(self) -> str:
+    def detail_extensions(self) -> str | object:
         """
         Retrieves the details of the extensions for the current session.
 
@@ -301,7 +301,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_history_users(self) -> str:
+    def list_history_users(self) -> str | object:
         """
         Generates a list of history users.
 
@@ -324,7 +324,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_history_connections(self) -> str:
+    def list_history_connections(self) -> str | object:
         """
         Return a JSON string representation of the history connections.
 
@@ -347,7 +347,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_users(self) -> str:
+    def list_users(self) -> str | object:
         """
         Generates a JSON formatted string containing a list of users.
 
@@ -371,7 +371,7 @@ class session:
             return response
 
     def detail_user(self,
-                    username: str) -> str:
+                    username: str) -> str | object:
         """
         Detail a user by their username.
 
@@ -395,7 +395,7 @@ class session:
             return response
 
     def detail_user_permissions(self,
-                                username: str) -> str:
+                                username: str) -> str | object:
         """
         Retrieves the detailed permissions of a user.
 
@@ -419,7 +419,7 @@ class session:
             return response
 
     def detail_user_effective_permissions(self,
-                                          username: str) -> str:
+                                          username: str) -> str | object:
         """
         Retrieves the effective permissions of a specific user.
 
@@ -443,7 +443,7 @@ class session:
             return response
 
     def detail_user_groups(self,
-                           username: str) -> str:
+                           username: str) -> str | object:
         """
         Retrieve the detailed information about the user groups for a given username.
 
@@ -467,7 +467,7 @@ class session:
             return response
 
     def detail_user_history(self,
-                            username: str) -> str:
+                            username: str) -> str | object:
         """
         Retrieves the detailed history of a user.
 
@@ -490,7 +490,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def detail_self(self) -> str:
+    def detail_self(self) -> str | object:
         """
         Retrieves detailed information about the current session.
 
@@ -516,7 +516,7 @@ class session:
     def create_user(self,
                     username: str,
                     password: str,
-                    attributes: dict | None = None) -> str:
+                    attributes: dict | None = None) -> str | object:
         """
         Create a new user.
 
@@ -561,7 +561,7 @@ class session:
 
     def update_user(self,
                     username: str,
-                    attributes: dict | None = None) -> str:
+                    attributes: dict | None = None) -> str | object:
         """
         Updates a user's attributes in the database.
 
@@ -606,7 +606,7 @@ class session:
     def update_user_password(self,
                              username: str,
                              oldpassword: str,
-                             newpassword: str) -> str:
+                             newpassword: str) -> str | object:
         """
         Update the password for a user.
 
@@ -638,7 +638,7 @@ class session:
     def update_user_group(self,
                           username: str,
                           groupnames: str | list,
-                          operation: str = "add") -> str:
+                          operation: str = "add") -> str | object:
         """
         Update the user group for a specified username.
 
@@ -686,15 +686,15 @@ class session:
 
     def update_connection_permissions(self,
                                       username: str,
-                                      connection_ids: str | list,
+                                      identifiers: str | list,
                                       operation: str = "add",
-                                      permission: str = "connection") -> str:
+                                      permission: str = "connection") -> str | object:
         """
         Update the permissions for a given user's connection(s) in the API.
 
         Args:
             username: The username of the user.
-            connection_ids: The ID(s) of the connection(s) to update permissions for.
+            identifiers: The ID(s) of the connection(s) to update permissions for.
                 Can be a string or a list of strings.
             operation: The operation to perform on the permissions.
                 Defaults to "add". Must be either "add" or "remove".
@@ -724,15 +724,15 @@ class session:
         else:
             raise ValueError(f"Invalid permission type '{permission}'")
 
-        if isinstance(connection_ids, str):
-            connection_ids = [connection_ids]
+        if isinstance(identifiers, str):
+            identifiers = [identifiers]
 
         permissions = [
             {
                 "op": operation,
-                "path": path + connection_id,
+                "path": path + identifier,
                 "value": "READ"
-            } for connection_id in connection_ids
+            } for identifier in identifiers
         ]
 
         response = requests.patch(
@@ -752,7 +752,7 @@ class session:
     def update_user_permissions(self,
                                 username: str,
                                 permissions: list | str,
-                                operation: str = "add") -> str:
+                                operation: str = "add") -> str | object:
         """
         Update a user's permissions
 
@@ -831,12 +831,11 @@ class session:
             return response
 
     def delete_user(self,
-                    username: str) -> str:
+                    username: str) -> str | object:
         """
         Deletes a user with the specified username.
 
         Args:
-            self (object): The current instance of the class.
             username (str): The username of the user to be deleted.
 
         Returns:
@@ -855,7 +854,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_usergroups(self) -> str:
+    def list_usergroups(self) -> str | object:
         """
         Returns a JSON string containing the user groups.
 
@@ -879,7 +878,7 @@ class session:
             return response
 
     def detail_usergroup(self,
-                         groupname: str) -> str:
+                         groupname: str) -> str | object:
         """
         Retrieves the details of a user group from the API.
 
@@ -902,10 +901,36 @@ class session:
         except json.JSONDecodeError:
             return response
 
+    def detail_usergroup_permissions(self,
+                                     groupname: str) -> str | object:
+        """
+        Retrieves the permissions of a user group from the API.
+
+        Args:
+            groupname (str): The name of the user group to retrieve.
+            permission (str, optional): The type of permission to retrieve.
+                Defaults to "connection".
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
+
+        response = requests.get(
+            f"{self.session_url}/userGroups/{groupname}/permissions",
+            params=self.params,
+            verify=False,
+            timeout=12
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
     def update_usergroup_member(self,
                                 usernames: str,
                                 groupname: str,
-                                operation: str = "add") -> str:
+                                operation: str = "add") -> str | object:
         """
         Update the membership of a user in a user group.
 
@@ -953,7 +978,7 @@ class session:
     def update_usergroup_membergroup(self,
                                      identifiers: str,
                                      groupname: str,
-                                     operation: str = "add") -> str:
+                                     operation: str = "add") -> str | object:
         """
         Updates the member group of a user group.
 
@@ -1002,7 +1027,7 @@ class session:
     def update_usergroup_parentgroup(self,
                                      identifiers: str,
                                      groupname: str,
-                                     operation: str = "add") -> str:
+                                     operation: str = "add") -> str | object:
         """
         Update the parent group of a user group.
 
@@ -1051,7 +1076,7 @@ class session:
     def update_usergroup_permissions(self,
                                      groupname: str,
                                      permissions: str | list,
-                                     operation: str = "add") -> str:
+                                     operation: str = "add") -> str | object:
         """
         Updates the permissions of a user group.
 
@@ -1112,17 +1137,17 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def update_usergroup_connection(self,
-                                    groupname: str,
-                                    connection_ids: str | list,
-                                    connection_type: str = "connection",
-                                    operation: str = "add") -> str:
+    def update_usergroup_connections(self,
+                                     groupname: str,
+                                     identifiers: str | list,
+                                     operation: str = "add",
+                                     permision: str = "connection") -> str | object:
         """
         Add to or remove connection(s) from a group
 
         Args:
             groupname: The name of the user group.
-            connection_ids: The ID(s) of the connection(s) to update permissions for.
+            identifiers: The ID(s) of the connection(s) to update permissions for.
                 Can be a string or a list of strings.
             connection_type: The type of connection(s) to update permissions for.
                 Defaults to "connection".
@@ -1137,26 +1162,26 @@ class session:
             raise ValueError(
                 f"Invalid operation '{operation}'. Use 'add' or 'remove'")
 
-        if connection_type == "connection":
+        if permision == "connection":
             path = "/connectionPermissions"
-        elif connection_type == "group":
+        elif permision == "group":
             path = "/connectionGroupPermissions"
-        elif connection_type == "sharing profile":
+        elif permision == "sharing profile":
             path = "/sharingProfilePermissions"
-        elif connection_type == "active connection":
+        elif permision == "active connection":
             path = "/activeConnectionPermissions"
         else:
-            raise ValueError(f"Invalid connection type '{connection_type}'")
+            raise ValueError(f"Invalid connection type '{permision}'")
 
-        if isinstance(connection_ids, str):
-            connection_ids = [connection_ids]
+        if isinstance(identifiers, str):
+            identifiers = [identifiers]
 
         conns = [
             {
                 "op": operation,
-                "path": f"{path}/{connection_id}",
+                "path": f"{path}/{identifier}",
                 "value": "READ"
-            } for connection_id in connection_ids
+            } for identifier in identifiers
         ]
 
         response = requests.patch(
@@ -1175,7 +1200,7 @@ class session:
 
     def create_usergroup(self,
                          groupname: str,
-                         attributes: dict | None = None) -> str:
+                         attributes: dict | None = None) -> str | object:
         """
         Create a user group with the given group name and attributes.
 
@@ -1209,7 +1234,7 @@ class session:
 
     def update_usergroup(self,
                          groupname: str,
-                         attributes: dict | None = None) -> str:
+                         attributes: dict | None = None) -> str | object:
         """
         Update a user group.
 
@@ -1242,7 +1267,7 @@ class session:
             return response
 
     def delete_usergroup(self,
-                         user_group: str) -> str:
+                         user_group: str) -> str | object:
         """
         Deletes a user group.
 
@@ -1265,7 +1290,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_tunnels(self) -> str:
+    def list_tunnels(self) -> str | object:
         """
         Return a JSON string representation of the Guacamole tunnels.
 
@@ -1288,20 +1313,20 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def detail_tunnels(self,
-                       tunnel_id: str) -> str:
+    def detail_tunnel(self,
+                      identifier: str) -> str | object:
         """
         Retrieves the details of a specific tunnel.
 
         Args:
-            tunnel_id (str): The ID of the tunnel.
+            identifier (str): The identifier of the tunnel.
 
         Returns:
            str | object: The request response JSON string or object
         """
 
         response = requests.get(
-            f"{self.tunnels_url}/{tunnel_id}/activeConnection/connection/sharingProfiles",
+            f"{self.tunnels_url}/{identifier}/activeConnection/connection/sharingProfiles",
             params=self.params,
             verify=False,
             timeout=12
@@ -1312,25 +1337,42 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_connections(self,
-                         active: bool = False) -> str:
+    def list_connections(self) -> str | object:
         """
         Lists the connections.
 
         Args:
-            active (bool, optional): Whether to list active connections. Defaults to False.
+            None
 
         Returns:
            str | object: The request response JSON string or object
         """
 
-        if active:
-            host = f"{self.session_url}/activeConnections"
-        else:
-            host = f"{self.session_url}/connections"
+        response = requests.get(
+            f"{self.session_url}/connections",
+            params=self.params,
+            verify=False,
+            timeout=12,
+        ).text
+
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError:
+            return response
+
+    def list_active_connections(self) -> str | object:
+        """
+        Lists the active connections with their uuids.
+
+        Args:
+            None
+
+        Returns:
+           str | object: The request response JSON string or object
+        """
 
         response = requests.get(
-            host,
+            f"{self.session_url}/activeConnections",
             params=self.params,
             verify=False,
             timeout=12,
@@ -1343,7 +1385,7 @@ class session:
 
     def detail_connection(self,
                           identifier: str,
-                          option: str = None) -> str:
+                          option: str = None) -> str | object:
         """
         Detail a connection based on the given identifier and option.
 
@@ -1382,34 +1424,34 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def kill_active_connection(self,
-                               connection_ids: str | list) -> str:
+    def kill_active_connections(self,
+                                uuids: str | list) -> str | object:
         """
-        Kills the active connection(s) specified by the given connection ID(s).
+        Kills the active connection(s) specified by connection uuid(s).
 
         Args:
-            connection_ids: The ID(s) of the connection(s) to kill.
+            uuids: The uuids(s) of the connection(s) to kill.
                 Can be a string or a list of strings.
 
         Returns:
            str | object: The request response JSON string or object
         """
 
-        if isinstance(connection_ids, str):
-            connection_ids = [connection_ids]
+        if isinstance(uuids, str):
+            uuids = [uuids]
 
-        kill_ids = [
+        kill_uuids = [
             {
                 "op": "remove",
-                "path": f"/{connection_id}"
-            } for connection_id in connection_ids
+                "path": f"/{uuid}"
+            } for uuid in uuids
         ]
 
         response = requests.patch(
             f"{self.session_url}/activeConnections",
             headers={"Content-Type": "application/json"},
             params=self.params,
-            json=kill_ids,
+            json=kill_uuids,
             verify=False,
             timeout=12
         ).text
@@ -1422,17 +1464,18 @@ class session:
     def manage_connection(self,
                           protocol: str,
                           name: str,
-                          parent_identifier: str,
-                          identifier: str = None,
+                          parent_identifier: str = 'ROOT',
+                          identifier: str | None = None,
                           parameters: dict | None = None,
-                          attributes: dict | None = None) -> str:
+                          attributes: dict | None = None) -> str | object:
         """
-        Creates, updates, or deletes a connection
+        Creates or updates a connection. Setting the identifier creates a new connection.
 
         Args: 
-            protocol (str): vnc, rdp, or sftp
+            protocol (str): "vnc", "ssh", "rdp", "sftp", "telnet", "kubernetes"
             name (str): name of connection
             parent_identifier (str): identifier of parent connection
+                Defaults to 'ROOT'
             identifier (str | optional): identifier of connection.
                 Defaults to None. If None it creates a new connection
             parameters (dict | optional): dictionary of parameters.
@@ -1714,22 +1757,22 @@ class session:
                 },
                 verify=False,
                 timeout=12
-            )
-
-        response = requests.post(
-            f"{self.session_url}/connections",
-            headers={"Content-Type": "application/json"},
-            params=self.params,
-            json={
-                "parentIdentifier": parent_identifier,
-                "name": name,
-                "protocol": protocol,
-                "parameters": parameters,
-                "attributes": attributes,
-            },
-            verify=False,
-            timeout=12
-        ).text
+            ).text
+        else:
+            response = requests.post(
+                f"{self.session_url}/connections",
+                headers={"Content-Type": "application/json"},
+                params=self.params,
+                json={
+                    "parentIdentifier": parent_identifier,
+                    "name": name,
+                    "protocol": protocol,
+                    "parameters": parameters,
+                    "attributes": attributes,
+                },
+                verify=False,
+                timeout=12
+            ).text
 
         try:
             return json.loads(response)
@@ -1737,7 +1780,7 @@ class session:
             return response
 
     def delete_connection(self,
-                          identifier: str) -> str:
+                          identifier: str) -> str | object:
         """
         Delete a connection identified by the given identifier.
 
@@ -1760,7 +1803,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_connection_groups(self) -> str:
+    def list_connection_groups(self) -> str | object:
         """
         Returns a JSON string containing the connection groups.
 
@@ -1783,7 +1826,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_connection_group_connections(self) -> str:
+    def list_connection_group_connections(self) -> str | object:
         """
         Retrieves the connections in the connection group with the specified ID.
 
@@ -1806,9 +1849,9 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def details_sharing_profile(self,
-                                sharing_id: str,
-                                option: str = '') -> str:
+    def detail_sharing_profile(self,
+                               sharing_id: str,
+                               option: str = '') -> str | object:
         """
         Retrieves the details of a sharing profile.
 
@@ -1845,8 +1888,8 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def details_connection_group_connections(self,
-                                             identifier: str) -> str:
+    def detail_connection_group_connections(self,
+                                            identifier: str) -> str | object:
         """
         Retrieve the details of a connection group's connections.
 
@@ -1871,23 +1914,28 @@ class session:
 
     def create_connection_group(self,
                                 group_name: str,
-                                group_type: str,
-                                parent_identifier: str = None,
-                                attributes: dict | None = None) -> str:
+                                group_type: str = 'ORGANIZATIONAL',
+                                parent_identifier: str = 'ROOT',
+                                attributes: dict | None = None) -> str | object:
         """
         Creates a connection group with the given parameters.
 
         Args:
             group_name (str): The name of the connection group.
             group_type (str): The type of the connection group.
+            Defaults to 'ORGANIZATIONAL'. Can be 'ORGANIZATIONAL' or 'BALANCING'
             parent_identifier (str, optional): The parent connection group identifier.
-            Defaults to None.
+            Defaults to 'ROOT'.
             attributes (dict, optional): Additional attributes for the connection group.
             Defaults to None.
 
         Returns:
            str | object: The request response JSON string or object
         """
+
+        if group_type not in ['ORGANIZATIONAL', 'BALANCING']:
+            raise ValueError(
+                f"Invalid option '{group_type}'. Use 'ORGANIZATIONAL' or 'BALANCING'.")
 
         response = requests.post(
             f"{self.session_url}/connectionGroups",
@@ -1915,9 +1963,9 @@ class session:
     def update_connection_group(self,
                                 identifier: str,
                                 group_name: str,
-                                group_type: str,
-                                parent_identifier: str = None,
-                                attributes: dict | None = None) -> str:
+                                group_type: str = 'ORGANIZATIONAL',
+                                parent_identifier: str = 'ROOT',
+                                attributes: dict | None = None) -> str | object:
         """
         Update a connection group.
 
@@ -1925,8 +1973,9 @@ class session:
             identifier (str): The identifier of the connection group.
             group_name (str): The name of the connection group.
             group_type (str): The type of the connection group.
+            Defaults to 'ORGANIZATIONAL'. Can be 'ORGANIZATIONAL' or 'BALANCING'
             parent_identifier (str, optional): The parent connection group identifier.
-            Defaults to None.
+            Defaults to 'ROOT'.
             attributes (dict, optional): Additional attributes for the connection group.
             Defaults to None.
 
@@ -1959,19 +2008,19 @@ class session:
             return response
 
     def delete_connection_group(self,
-                                connection_group: str) -> str:
+                                identifier: str) -> str | object:
         """
         Deletes a connection group from the server.
 
         Args:
-            connection_group (str): The name of the connection group to delete.
+            identifier (str): The connection group identifier to delete.
 
         Returns:
            str | object: The request response JSON string or object
         """
 
         response = requests.delete(
-            f"{self.session_url}/connectionGroups/{connection_group}",
+            f"{self.session_url}/connectionGroups/{identifier}",
             params=self.params,
             verify=False,
             timeout=12
@@ -1982,7 +2031,7 @@ class session:
         except json.JSONDecodeError:
             return response
 
-    def list_sharing_profile(self) -> str:
+    def list_sharing_profiles(self) -> str | object:
         """
         Retrieves the sharing profile list from the API.
 
@@ -2008,12 +2057,12 @@ class session:
     def create_sharing_profile(self,
                                primary_identifier: str,
                                name: str,
-                               parameters: dict | None = None) -> str:
+                               parameters: dict | None = None) -> str | object:
         """
         Creates a sharing profile with the specified primary identifier, name, and parameters.
 
         Args:
-            primary_identifier (str): The primary identifier of the sharing profile.
+            primary_identifier (str): The identifier of the connection above the sharing profile.
             name (str): The name of the sharing profile.
             parameters (dict, optional): Additional parameters for the sharing profile.
                 Defaults to None.
@@ -2047,7 +2096,7 @@ class session:
                                primary_identifier: str,
                                name: str,
                                identifier: str,
-                               parameters: dict | None = None) -> str:
+                               parameters: dict | None = None) -> str | object:
         """
         Updates the sharing profile with the specified primary identifier,
             name, identifier, and parameters.
@@ -2085,7 +2134,7 @@ class session:
             return response
 
     def delete_sharing_profile(self,
-                               identifier: str) -> str:
+                               identifier: str) -> str | object:
         """
         Deletes a sharing profile with the specified identifier.
 
